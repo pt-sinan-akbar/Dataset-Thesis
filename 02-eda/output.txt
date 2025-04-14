@@ -1,0 +1,75 @@
+null on customer city:  0.0
+accent on customer city:  0
+null in geolocation dataset: 
+ geolocation_zip_code_prefix    0.0
+geolocation_lat                0.0
+geolocation_lng                0.0
+geolocation_city               0.0
+geolocation_state              0.0
+dtype: float64
+unique val in geoloc:  ['sao paulo' 'são paulo' 'sao bernardo do campo' ... 'ciríaco' 'estação'
+ 'vila lângaro']
+accent on geolocation city:  73442
+unique val in geoloc:  ['sao paulo' 'sao bernardo do campo' 'jundiai' ... 'floriano peixoto'
+ 'erebango' 'santa cecilia do sul']
+accent on geolocation city:  0
+geolocation_zip_code_prefix
+24220    1146
+24230    1102
+38400     965
+35500     907
+11680     879
+         ... 
+1200        1
+1189        1
+1290        1
+1262        1
+39523       1
+Length: 19015, dtype: int64
+        geolocation_zip_code_prefix  ...  geolocation_state
+470805                        24220  ...                 RJ
+470811                        24220  ...                 RJ
+470812                        24220  ...                 RJ
+470820                        24220  ...                 RJ
+470821                        24220  ...                 RJ
+
+[5 rows x 5 columns]
+(8, 2)
+                           order_id  ... freight_value
+0  e481f51cbdc54678b7cc49136f2d6af7  ...          8.72
+1  53cdb2fc8bc7dce0b6741e2150273451  ...         22.76
+2  47770eb9100c2d0c44946d9cf07ec65d  ...         19.22
+3  949d5b44dbf5de918fe9c16f97b45f8a  ...         27.20
+4  ad21c59c0840e6cb83a9ceb5573f8159  ...          8.72
+
+[5 rows x 19 columns]
+                        Customer ID  Total Expense
+0  0000366f3b9a7992bf8c76cfdf3221e2         141.90
+1  0000b849f77a49e4a4ce2b2a4ca5be3f          27.19
+2  0000f46a3911fa3c0805444483337064          86.22
+3  0000f6ccb0745a6a4b88665a16c9f078          43.62
+4  0004aac84e0df4da2b147fca70cf8255         196.89
+Average customer expense: R$ 165.17
+Median customer expense: R$ 107.78
+Maximum customer expense: R$ 13664.08
+99th percentile expense: R$ 1097.09
+Order count per year
+   year  order_count
+0  2016          272
+1  2017        43411
+2  2018        52778
+Average monthly orders: 4193.96
+Average yearly orders: 32153.67
+payment_type
+credit_card    76795
+boleto         19784
+voucher         5775
+debit_card      1529
+not_defined        3
+Name: count, dtype: int64
+  Payment Method  Percentage
+0    credit_card   73.922376
+1         boleto   19.043952
+2        voucher    5.558978
+3     debit_card    1.471806
+4    not_defined    0.002888

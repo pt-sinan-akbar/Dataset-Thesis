@@ -1,0 +1,198 @@
+Is running inside kaggle: False
+Customers Dataset:  (99441, 5)
+Geolocation Dataset:  (1000163, 5)
+Order Items Dataset:  (112650, 7)
+Order Payments Dataset:  (103886, 5)
+Order Reviews Dataset:  (99224, 7)
+Orders Dataset:  (99441, 8)
+Products Dataset:  (32951, 9)
+Sellers Dataset:  (3095, 4)
+Customer dataset:
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 99441 entries, 0 to 99440
+Data columns (total 5 columns):
+ #   Column                    Non-Null Count  Dtype 
+---  ------                    --------------  ----- 
+ 0   customer_id               99441 non-null  object
+ 1   customer_unique_id        99441 non-null  object
+ 2   customer_zip_code_prefix  99441 non-null  int64 
+ 3   customer_city             99441 non-null  object
+ 4   customer_state            99441 non-null  object
+dtypes: int64(1), object(4)
+memory usage: 3.8+ MB
+None
+Missing values count: 0
+
+Order items dataset:
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 112650 entries, 0 to 112649
+Data columns (total 7 columns):
+ #   Column               Non-Null Count   Dtype  
+---  ------               --------------   -----  
+ 0   order_id             112650 non-null  object 
+ 1   order_item_id        112650 non-null  int64  
+ 2   product_id           112650 non-null  object 
+ 3   seller_id            112650 non-null  object 
+ 4   shipping_limit_date  112650 non-null  object 
+ 5   price                112650 non-null  float64
+ 6   freight_value        112650 non-null  float64
+dtypes: float64(2), int64(1), object(4)
+memory usage: 6.0+ MB
+None
+Missing values count: 0
+
+Order payments dataset:
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 103886 entries, 0 to 103885
+Data columns (total 5 columns):
+ #   Column                Non-Null Count   Dtype  
+---  ------                --------------   -----  
+ 0   order_id              103886 non-null  object 
+ 1   payment_sequential    103886 non-null  int64  
+ 2   payment_type          103886 non-null  object 
+ 3   payment_installments  103886 non-null  int64  
+ 4   payment_value         103886 non-null  float64
+dtypes: float64(1), int64(2), object(2)
+memory usage: 4.0+ MB
+None
+Missing values count: 0
+
+Orders dataset:
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 99441 entries, 0 to 99440
+Data columns (total 8 columns):
+ #   Column                         Non-Null Count  Dtype 
+---  ------                         --------------  ----- 
+ 0   order_id                       99441 non-null  object
+ 1   customer_id                    99441 non-null  object
+ 2   order_status                   99441 non-null  object
+ 3   order_purchase_timestamp       99441 non-null  object
+ 4   order_approved_at              99281 non-null  object
+ 5   order_delivered_carrier_date   97658 non-null  object
+ 6   order_delivered_customer_date  96476 non-null  object
+ 7   order_estimated_delivery_date  99441 non-null  object
+dtypes: object(8)
+memory usage: 6.1+ MB
+None
+Missing values count: 4908
+
+Column name | Count of missing values | Total row | Percentage
+[['order_approved_at' 160 99441 0.1608994278014099]
+ ['order_delivered_carrier_date' 1783 99441 1.7930229985619612]
+ ['order_delivered_customer_date' 2965 99441 2.981667521444877]]
+order_status
+shipped        1107
+canceled        619
+unavailable     609
+invoiced        314
+processing      301
+delivered        23
+created           5
+approved          2
+Name: count, dtype: int64
+total entry before delete:  99441
+total row after delete:  96461
+<class 'pandas.core.frame.DataFrame'>
+Index: 96461 entries, 0 to 99440
+Data columns (total 8 columns):
+ #   Column                         Non-Null Count  Dtype 
+---  ------                         --------------  ----- 
+ 0   order_id                       96461 non-null  object
+ 1   customer_id                    96461 non-null  object
+ 2   order_status                   96461 non-null  object
+ 3   order_purchase_timestamp       96461 non-null  object
+ 4   order_approved_at              96461 non-null  object
+ 5   order_delivered_carrier_date   96461 non-null  object
+ 6   order_delivered_customer_date  96461 non-null  object
+ 7   order_estimated_delivery_date  96461 non-null  object
+dtypes: object(8)
+memory usage: 6.6+ MB
+<class 'pandas.core.frame.DataFrame'>
+Index: 96461 entries, 0 to 99440
+Data columns (total 8 columns):
+ #   Column                         Non-Null Count  Dtype         
+---  ------                         --------------  -----         
+ 0   order_id                       96461 non-null  object        
+ 1   customer_id                    96461 non-null  object        
+ 2   order_status                   96461 non-null  object        
+ 3   order_purchase_timestamp       96461 non-null  datetime64[ns]
+ 4   order_approved_at              96461 non-null  datetime64[ns]
+ 5   order_delivered_carrier_date   96461 non-null  datetime64[ns]
+ 6   order_delivered_customer_date  96461 non-null  datetime64[ns]
+ 7   order_estimated_delivery_date  96461 non-null  datetime64[ns]
+dtypes: datetime64[ns](5), object(3)
+memory usage: 6.6+ MB
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 112650 entries, 0 to 112649
+Data columns (total 7 columns):
+ #   Column               Non-Null Count   Dtype         
+---  ------               --------------   -----         
+ 0   order_id             112650 non-null  object        
+ 1   order_item_id        112650 non-null  int64         
+ 2   product_id           112650 non-null  object        
+ 3   seller_id            112650 non-null  object        
+ 4   shipping_limit_date  112650 non-null  datetime64[ns]
+ 5   price                112650 non-null  float64       
+ 6   freight_value        112650 non-null  float64       
+dtypes: datetime64[ns](1), float64(2), int64(1), object(3)
+memory usage: 6.0+ MB
+None
+Order status mapping: {'canceled': np.int64(0), 'delivered': np.int64(1)}
+(115018, 23)
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 115018 entries, 0 to 115017
+Data columns (total 23 columns):
+ #   Column                         Non-Null Count   Dtype         
+---  ------                         --------------   -----         
+ 0   customer_id                    115018 non-null  object        
+ 1   customer_unique_id             115018 non-null  object        
+ 2   customer_zip_code_prefix       115018 non-null  int64         
+ 3   customer_city                  115018 non-null  object        
+ 4   customer_state                 115018 non-null  object        
+ 5   order_id                       115018 non-null  object        
+ 6   order_status                   115018 non-null  category      
+ 7   order_purchase_timestamp       115018 non-null  datetime64[ns]
+ 8   order_approved_at              115018 non-null  datetime64[ns]
+ 9   order_delivered_carrier_date   115018 non-null  datetime64[ns]
+ 10  order_delivered_customer_date  115018 non-null  datetime64[ns]
+ 11  order_estimated_delivery_date  115018 non-null  datetime64[ns]
+ 12  order_status_encoded           115018 non-null  int64         
+ 13  order_item_id                  115018 non-null  int64         
+ 14  product_id                     115018 non-null  object        
+ 15  seller_id                      115018 non-null  object        
+ 16  shipping_limit_date            115018 non-null  datetime64[ns]
+ 17  price                          115018 non-null  float64       
+ 18  freight_value                  115018 non-null  float64       
+ 19  payment_sequential             115018 non-null  int64         
+ 20  payment_type                   115018 non-null  object        
+ 21  payment_installments           115018 non-null  int64         
+ 22  payment_value                  115018 non-null  float64       
+dtypes: category(1), datetime64[ns](6), float64(3), int64(5), object(8)
+memory usage: 19.4+ MB
+None
+Missing values count: 
+customer_id                      0
+customer_unique_id               0
+customer_zip_code_prefix         0
+customer_city                    0
+customer_state                   0
+order_id                         0
+order_status                     0
+order_purchase_timestamp         0
+order_approved_at                0
+order_delivered_carrier_date     0
+order_delivered_customer_date    0
+order_estimated_delivery_date    0
+order_status_encoded             0
+order_item_id                    0
+product_id                       0
+seller_id                        0
+shipping_limit_date              0
+price                            0
+freight_value                    0
+payment_sequential               0
+payment_type                     0
+payment_installments             0
+payment_value                    0
+dtype: int64
+Duplicate values count:  0
