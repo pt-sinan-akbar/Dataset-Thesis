@@ -1,0 +1,25 @@
+       State  Code
+0   Mid-West     0
+1      North     1
+2  Northeast     2
+3      South     3
+4  Southeast     4
+    recency  frequency  monetary  State       Code
+0 -0.825508   -0.39207  0.316722      4  Southeast
+1 -0.805830   -0.39207 -1.923088      4  Southeast
+2  1.962187   -0.39207 -0.285795      3      South
+3  0.545382   -0.39207 -1.210315      1      North
+4  0.328926   -0.39207  0.681231      4  Southeast
+             count          mean       std  ...       95%       99%       max
+recency    91393.0 -6.227443e-17  1.000005  ...  1.844120  2.211439  2.998553
+frequency  91393.0  7.308111e-18  1.000005  ...  2.550038  2.553520  2.553520
+monetary   91393.0  8.124442e-18  1.000005  ...  1.701897  2.272537  2.707019
+State      91393.0  3.378278e+00  1.112344  ...  4.000000  4.000000  4.000000
+
+[4 rows x 14 columns]
+recency      0
+frequency    0
+monetary     0
+State        0
+Code         0
+dtype: int64

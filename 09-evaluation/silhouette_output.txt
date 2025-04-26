@@ -1,0 +1,5 @@
+Evaluating k=2
+Evaluating k=3
+Evaluating k=4
+Evaluating k=5
+Evaluating k=6

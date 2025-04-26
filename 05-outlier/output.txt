@@ -1,0 +1,34 @@
+             count        mean         std  ...     95%        99%      max
+recency    91393.0  236.853424  152.456559  ...  518.00   574.0000   694.00
+frequency  91393.0    1.153382    0.412486  ...    2.00     3.0000     3.00
+monetary   91393.0  175.838634  213.591769  ...  565.25  1148.0416  2133.69
+
+[3 rows x 14 columns]
+--- Outlier Analysis ---
+Column: recency
+Outliers Count: 0
+Outlier Percentage: 0.00%
+
+Column: frequency
+Outliers Count: 1695
+Outlier Percentage: 1.82%
+
+Column: monetary
+Outliers Count: 571
+Outlier Percentage: 0.61%
+
+--- Descriptive Statistics ---
+Original DataFrame size: 93335
+Cleaned DataFrame size: 91393
+Total Rows Removed: 1942
+frequency
+3     1841
+2    10336
+1    79216
+Name: count, dtype: int64
+                 customer_unique_id  recency  frequency  monetary      State
+0  0000366f3b9a7992bf8c76cfdf3221e2      111          1    141.90  Southeast
+1  0000b849f77a49e4a4ce2b2a4ca5be3f      114          1     27.19  Southeast
+2  0000f46a3911fa3c0805444483337064      536          1     86.22      South
+3  0000f6ccb0745a6a4b88665a16c9f078      320          1     43.62      North
+4  0004aac84e0df4da2b147fca70cf8255      287          1    196.89  Southeast

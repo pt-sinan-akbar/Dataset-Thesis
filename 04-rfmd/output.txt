@@ -1,0 +1,54 @@
+                 customer_unique_id  recency  ...  segments  State
+0  0000366f3b9a7992bf8c76cfdf3221e2      111  ...   Rookies     SP
+1  0000b849f77a49e4a4ce2b2a4ca5be3f      114  ...   Rookies     SP
+2  0000f46a3911fa3c0805444483337064      536  ...      Gone     SC
+3  0000f6ccb0745a6a4b88665a16c9f078      320  ...      Gone     PA
+4  0004aac84e0df4da2b147fca70cf8255      287  ...   Regular     SP
+
+[5 rows x 10 columns]
+                 Customer Unique ID Recency Frequency  Monetary State
+0  0000366f3b9a7992bf8c76cfdf3221e2       1         1    141.90    SP
+1  0000b849f77a49e4a4ce2b2a4ca5be3f       1         1     27.19    SP
+2  0000f46a3911fa3c0805444483337064       3         1     86.22    SC
+3  0000f6ccb0745a6a4b88665a16c9f078       3         1     43.62    PA
+4  0004aac84e0df4da2b147fca70cf8255       2         1    196.89    SP
+            Monetary
+count   93335.000000
+mean      211.844495
+std       642.239857
+min         9.590000
+25%        63.750000
+50%       112.950000
+75%       201.740000
+max    109312.640000
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 93335 entries, 0 to 93334
+Data columns (total 5 columns):
+ #   Column              Non-Null Count  Dtype  
+---  ------              --------------  -----  
+ 0   Customer Unique ID  93335 non-null  object 
+ 1   Recency             93335 non-null  object 
+ 2   Frequency           93335 non-null  object 
+ 3   Monetary            93335 non-null  float64
+ 4   State               93335 non-null  object 
+dtypes: float64(1), object(4)
+memory usage: 3.6+ MB
+None
+                 Customer Unique ID Recency Frequency  Monetary      State
+0  0000366f3b9a7992bf8c76cfdf3221e2       1         1    141.90  Southeast
+1  0000b849f77a49e4a4ce2b2a4ca5be3f       1         1     27.19  Southeast
+2  0000f46a3911fa3c0805444483337064       3         1     86.22      South
+3  0000f6ccb0745a6a4b88665a16c9f078       3         1     43.62      North
+4  0004aac84e0df4da2b147fca70cf8255       2         1    196.89  Southeast
+                 customer_unique_id  recency  frequency  monetary      State
+0  0000366f3b9a7992bf8c76cfdf3221e2      111          1    141.90  Southeast
+1  0000b849f77a49e4a4ce2b2a4ca5be3f      114          1     27.19  Southeast
+2  0000f46a3911fa3c0805444483337064      536          1     86.22      South
+3  0000f6ccb0745a6a4b88665a16c9f078      320          1     43.62      North
+4  0004aac84e0df4da2b147fca70cf8255      287          1    196.89  Southeast
+             count        mean         std  ...      95%        99%        max
+recency    93335.0  236.898752  152.545822  ...  519.000   574.0000     694.00
+frequency  93335.0    1.232239    0.819845  ...    2.000     4.0000      75.00
+monetary   93335.0  211.844495  642.239857  ...  658.947  1672.4694  109312.64
+
+[3 rows x 14 columns]

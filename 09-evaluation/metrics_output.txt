@@ -1,0 +1,5 @@
+k=2: Silhouette=0.5257, Davies-Bouldin=0.7798, Calinski-Harabasz=54607.4277
+k=3: Silhouette=0.3752, Davies-Bouldin=0.9852, Calinski-Harabasz=62561.9591
+k=4: Silhouette=0.3809, Davies-Bouldin=0.8373, Calinski-Harabasz=70059.2651
+k=5: Silhouette=0.3616, Davies-Bouldin=0.8716, Calinski-Harabasz=66861.0163
+k=6: Silhouette=0.3471, Davies-Bouldin=0.9799, Calinski-Harabasz=63303.2152
