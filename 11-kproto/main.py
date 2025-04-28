@@ -3,19 +3,29 @@ import pandas as pd
 from kmodes.kprototypes import KPrototypes
 from utils import plot_3d_clusters, summarize_cluster
 
-with open('../09-evaluation/rfmd_kproto.pkl', 'rb') as file:
-    rfmd_kproto = pickle.load(file)
+# Custom for python script
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
+
 with open('../05-outlier/rfmd_clean.pkl', 'rb') as file:
     df_clean = pickle.load(file)
 with open('../08-rfmd-final-processing/encoded_to_state.pkl', 'rb') as file:
     encoded_to_state = pickle.load(file)
 with open('../08-rfmd-final-processing/state_mapping.pkl', 'rb') as file:
     state_mapping = pickle.load(file)
+with open('../08-rfmd-final-processing/rfmd_final.pkl', 'rb') as file:
+    RFMD_final = pickle.load(file)
+
+# END
+
 # Setelah dapet cluster yg bagus dari atas
 best_k = 4
+
 # imported from huang
+rfmd_kproto = pd.DataFrame(RFMD_final, columns=['recency', 'frequency', 'monetary', 'State'])
 gamma_value = 1.0
 categorical_indices = [3]
+# end
 
 kproto = KPrototypes(n_clusters=best_k, init='Huang', gamma=gamma_value)
 clusters_kproto = kproto.fit_predict(rfmd_kproto, categorical=categorical_indices)

@@ -7,11 +7,17 @@ import matplotlib.pyplot as plt
 from utils import plot_3d_clusters
 import pickle
 
+# Custom for python script
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
+
 with open('../08-rfmd-final-processing/rfmd_final.pkl', 'rb') as file:
     RFMD_final = pickle.load(file)
 
 with open('../08-rfmd-final-processing/rfm_numerical.pkl', 'rb') as file:
     RFM_numerical = pickle.load(file)
+# END
 
 def silhouette_analysis(X, cluster_range=range(2, 11)):
     silhouette_scores = []

@@ -1,12 +1,20 @@
 import pickle
 import seaborn as sns
 import matplotlib.pyplot as plt
+import pandas as pd
+
+# Custom for python script
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
 
 with open('../01-preprocessing/customers_dataset.pkl', 'rb') as file:
     customers_dataset = pickle.load(file)
 
 with open('../03-rfm/rfm_raw.pkl', 'rb') as file:
     RFM = pickle.load(file)
+
+# END
 
 customer_state_dict = customers_dataset.set_index('customer_unique_id')['customer_state'].to_dict()
 

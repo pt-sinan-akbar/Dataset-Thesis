@@ -3,8 +3,15 @@ import pandas as pd
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
+# Custom for python script
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
+
 with open('../08-rfmd-final-processing/rfmd_final.pkl', 'rb') as file:
     RFMD_final = pickle.load(file)
+
+# END
 
 # Elbow method RFMD
 

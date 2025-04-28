@@ -4,10 +4,17 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 
+# Custom for python script
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
+
 with open('../05-outlier/rfmd_clean.pkl', 'rb') as file:
     df_clean = pickle.load(file)
 with open('../07-scaling/rfmd_scaled.pkl', 'rb') as file:
     RFMD_scaled = pickle.load(file)
+
+# END
 
 # Label Encoding
 
@@ -63,8 +70,12 @@ print(RFMD_final.isnull().sum())
 RFM_numerical = pd.DataFrame(RFMD_final, columns=['recency', 'frequency', 'monetary'])
 RFM_categorical = RFMD_final['State']
 
+# Custom for python script
+
 pickle.dump(encoded_to_state, open('encoded_to_state.pkl', 'wb'))
 pickle.dump(state_mapping, open('state_mapping.pkl', 'wb'))
 RFMD_final.to_pickle('rfmd_final.pkl')
 RFM_numerical.to_pickle('rfm_numerical.pkl')
 RFM_categorical.to_pickle('rfm_categorical.pkl')
+
+# END

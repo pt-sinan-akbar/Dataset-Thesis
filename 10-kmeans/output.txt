@@ -2,9 +2,9 @@ raw row count: 91393
 kemans row count: 91393
    recency  frequency  monetary      State  Cluster
 0      111          1    141.90  Southeast        0
-1      114          1     27.19  Southeast        1
-2      536          1     86.22      South        3
-3      320          1     43.62      North        1
+1      114          1     27.19  Southeast        2
+2      536          1     86.22      South        1
+3      320          1     43.62      North        2
 4      287          1    196.89  Southeast        0
    State  count
 0      0   5346
@@ -19,20 +19,30 @@ kemans row count: 91393
 3      South  13112
 4  Southeast  62624
 KNN Cluster summary:
-           Mean R    Mean F    Mean M  ...  Northeast  South  Southeast
-Cluster                                ...                             
-0       -0.542922 -0.392070  0.617501  ...       3390   4259      19639
-1       -0.513014 -0.390362 -1.000798  ...       1730   3500      18925
-2        0.008537  2.550564  0.896391  ...       1025   1773       8414
-3        1.249045 -0.391569 -0.147948  ...       2463   3580      15646
+           Mean R    Mean F    Mean M  Number of Customer  Percentage (%)  \
+Cluster                                                                     
+0       -0.534795 -0.392070  0.628842               29624           32.41   
+1        1.243606 -0.391572 -0.160905               23658           25.89   
+2       -0.527194 -0.390369 -0.991039               25953           28.40   
+3        0.008537  2.550564  0.896391               12158           13.30   
 
-[4 rows x 10 columns]
+         Mid-West  North  Northeast  South  Southeast  
+Cluster                                                
+0            1901    671       3374   4232      19446  
+1            1300    538       2464   3597      15759  
+2            1396    297       1745   3510      19005  
+3             749    197       1025   1773       8414  
 KNN Cluster summary (Original Data):
-             Mean R    Mean F      Mean M  ...  Northeast  South  Southeast
-Cluster                                    ...                             
-0        154.081813  1.000000  239.989718  ...       3390   4259      19639
-1        158.641439  1.000658   54.915705  ...       1730   3500      18925
-2        238.154960  2.151176  360.261612  ...       1025   1773       8414
-3        427.277416  1.000213  131.898214  ...       2463   3580      15646
+             Mean R    Mean F      Mean M  Number of Customer  Percentage (%)  \
+Cluster                                                                         
+0        155.320888  1.000000  242.294887               29624           32.41   
+1        426.448305  1.000211  130.003778               23658           25.89   
+2        156.479675  1.000655   55.368800               25953           28.40   
+3        238.154960  2.151176  360.261612               12158           13.30   
 
-[4 rows x 10 columns]
+         Mid-West  North  Northeast  South  Southeast  
+Cluster                                                
+0            1901    671       3374   4232      19446  
+1            1300    538       2464   3597      15759  
+2            1396    297       1745   3510      19005  
+3             749    197       1025   1773       8414  

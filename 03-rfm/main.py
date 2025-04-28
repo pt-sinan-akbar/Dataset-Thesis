@@ -4,8 +4,14 @@ import seaborn as sns
 import squarify
 import matplotlib.pyplot as plt
 
+# Custom for python script
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
+
 with open('../01-preprocessing/merged_dataset.pkl', 'rb') as file:
     merged_ds = pickle.load(file)
+
+# END
 
 max_date = merged_ds['order_purchase_timestamp'].max()
 
@@ -134,4 +140,6 @@ plt.title("Cross Tabulation", fontsize=14, pad=20)
 # plt.show()
 plt.savefig('rfm_cross_tabulation.png', dpi=300, bbox_inches='tight')
 
+# Custom for python script
 RFM.to_pickle('rfm_raw.pkl')
+# END

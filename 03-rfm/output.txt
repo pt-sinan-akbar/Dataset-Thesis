@@ -3,12 +3,15 @@ recency               0
 frequency             0
 monetary              0
 dtype: int64
-             count        mean         std  ...      95%        99%        max
-recency    93335.0  236.898752  152.545822  ...  519.000   574.0000     694.00
-frequency  93335.0    1.232239    0.819845  ...    2.000     4.0000      75.00
-monetary   93335.0  211.844495  642.239857  ...  658.947  1672.4694  109312.64
+             count        mean         std   min     1%     5%    10%     25%  \
+recency    93335.0  236.898752  152.545822  0.00   8.00  22.00  41.00  113.00   
+frequency  93335.0    1.232239    0.819845  1.00   1.00   1.00   1.00    1.00   
+monetary   93335.0  211.844495  642.239857  9.59  22.75  32.69  40.17   63.75   
 
-[3 rows x 14 columns]
+              50%     75%      90%      95%        99%        max  
+recency    218.00  345.00  464.600  519.000   574.0000     694.00  
+frequency    1.00    1.00    2.000    2.000     4.0000      75.00  
+monetary   112.95  201.74  402.136  658.947  1672.4694  109312.64  
 frequency
 75        1
 38        1
@@ -43,14 +46,19 @@ Rookies     28.961269
 Gone        28.086998
 Valuable     6.409171
 Name: proportion, dtype: float64
-                 customer_unique_id  recency  ...  RFM_Score  segments
-0  0000366f3b9a7992bf8c76cfdf3221e2      111  ...        112   Rookies
-1  0000b849f77a49e4a4ce2b2a4ca5be3f      114  ...        111   Rookies
-2  0000f46a3911fa3c0805444483337064      536  ...        312      Gone
-3  0000f6ccb0745a6a4b88665a16c9f078      320  ...        311      Gone
-4  0004aac84e0df4da2b147fca70cf8255      287  ...        213   Regular
+                 customer_unique_id  recency  frequency  monetary R_Score  \
+0  0000366f3b9a7992bf8c76cfdf3221e2      111          1    141.90       1   
+1  0000b849f77a49e4a4ce2b2a4ca5be3f      114          1     27.19       1   
+2  0000f46a3911fa3c0805444483337064      536          1     86.22       3   
+3  0000f6ccb0745a6a4b88665a16c9f078      320          1     43.62       3   
+4  0004aac84e0df4da2b147fca70cf8255      287          1    196.89       2   
 
-[5 rows x 9 columns]
+  M_Score F_Score RFM_Score segments  
+0       2       1       112  Rookies  
+1       1       1       111  Rookies  
+2       2       1       312     Gone  
+3       1       1       311     Gone  
+4       3       1       213  Regular  
             recency     frequency       monetary
 count  93335.000000  93335.000000   93335.000000
 mean     236.898752      1.232239     211.844495

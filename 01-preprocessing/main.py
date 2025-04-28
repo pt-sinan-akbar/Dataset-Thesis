@@ -4,6 +4,12 @@ import numpy as np
 from django.contrib.admin import display
 from sklearn.preprocessing import LabelEncoder
 
+# Custom for python script
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
+
+# END
+
 # Load and read all dataset
 is_in_kaggle = True if os.environ.get("KAGGLE_KERNEL_RUN_TYPE", "") else False
 print("Is running inside kaggle:", is_in_kaggle)
@@ -92,6 +98,7 @@ payments_encoded = pd.concat([order_payments_dataset, payment_dummies], axis=1)
 # payments.drop(columns='payment_type', inplace=True)
 display(payments_encoded.head())
 
+# Custom for python script
 # export the datasets to csv
 orders_dataset.to_pickle('orders_dataset.pkl')
 order_items_dataset.to_pickle('order_items_dataset.pkl')
@@ -105,6 +112,7 @@ order_payments_dataset.to_pickle('order_payments_dataset.pkl')
 order_reviews_dataset.to_pickle('order_reviews_dataset.pkl')
 products_dataset.to_pickle('products_dataset.pkl')
 sellers_dataset.to_pickle('sellers_dataset.pkl')
+# END
 
 
 #Merging all relevant datasets
@@ -134,4 +142,6 @@ merged_ds = merged_ds.dropna()
 # Count duplicate values
 print("Duplicate values count: ", merged_ds.duplicated().sum())
 
+# Custom for python script
 merged_ds.to_pickle('merged_dataset.pkl')
+# END

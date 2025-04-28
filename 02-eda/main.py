@@ -11,6 +11,10 @@ import folium
 from folium.plugins import HeatMap
 import pickle
 
+# Custom for python script
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
+
 # import dataset from preprocessing
 with open('../01-preprocessing/customers_dataset.pkl', 'rb') as file:
     customers_dataset = pickle.load(file)
@@ -22,6 +26,8 @@ with open('../01-preprocessing/order_items_dataset.pkl', 'rb') as file:
     order_items_dataset = pickle.load(file)
 with open('../01-preprocessing/order_payments_dataset.pkl', 'rb') as file:
     order_payments_dataset = pickle.load(file)
+
+# END
 
 # top 20 customer cities
 

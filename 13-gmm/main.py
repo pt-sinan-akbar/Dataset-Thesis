@@ -4,7 +4,10 @@ from sklearn.mixture import GaussianMixture
 import matplotlib.pyplot as plt
 from utils import plot_3d_clusters, summarize_cluster
 
-### Find the optimal number of clusters using the BIC and AIC criteria
+# Custom for python script
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
 
 with open('../08-rfmd-final-processing/rfmd_final.pkl', 'rb') as file:
     RFMD_final = pickle.load(file)
@@ -12,6 +15,10 @@ with open('../08-rfmd-final-processing/rfm_numerical.pkl', 'rb') as file:
     RFM_numerical = pickle.load(file)
 with open('../05-outlier/rfmd_clean.pkl', 'rb') as file:
     df_clean = pickle.load(file)
+
+# END
+
+### Find the optimal number of clusters using the BIC and AIC criteria
 
 gaussian_df = RFM_numerical.copy()
 

@@ -1,8 +1,16 @@
 import numpy as np
 import pickle
+import pandas as pd
+
+# Custom for python script
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
 
 with open('../04-rfmd/rfmd_raw.pkl', 'rb') as file:
     RFMD_Raw = pickle.load(file)
+
+# END
 
 def iqr_outliers(df):
     # Create a copy of the DataFrame to avoid modifying the original
@@ -106,5 +114,7 @@ print_outlier_analysis(RFMD_Raw, outlier_results, df_clean)
 print(df_clean['frequency'].value_counts().sort_index(ascending=False))
 
 print(df_clean.head())
+
+print(df_clean.describe([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99]).T)
 
 df_clean.to_pickle('rfmd_clean.pkl')

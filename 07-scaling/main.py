@@ -4,8 +4,15 @@ import seaborn as sns
 from sklearn.preprocessing import StandardScaler, RobustScaler
 import matplotlib.pyplot as plt
 
+# Custom for python script
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
+
 with open('../06-transformation/rfmd_transformed.pkl', 'rb') as file:
     RFMD_transformed = pickle.load(file)
+
+# END
 
 # standardize RFMD features
 scaler = RobustScaler()
@@ -60,4 +67,8 @@ RFMD_scaled = pd.DataFrame(RFMD_scaled_standard, columns=['recency', 'frequency'
 print(RFMD_scaled.head())
 print(RFMD_scaled.describe([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99]).T)
 
+# Custom for python script
+
 RFMD_scaled.to_pickle('rfmd_scaled.pkl')
+
+# END

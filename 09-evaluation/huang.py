@@ -4,8 +4,14 @@ import numpy as np
 from kmodes.kprototypes import KPrototypes
 import matplotlib.pyplot as plt
 
+# Custom for python script
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
+
 with open('../08-rfmd-final-processing/rfmd_final.pkl', 'rb') as file:
     RFMD_final = pickle.load(file)
+
+# END
 
 # select the features for K-
 rfmd_kproto = pd.DataFrame(RFMD_final, columns=['recency', 'frequency', 'monetary', 'State'])
@@ -97,4 +103,8 @@ plt.tight_layout()
 # plt.show()
 plt.savefig('huang_cost_rfmd.png', dpi=300, bbox_inches='tight')
 
+# Custom for python script
+
 rfmd_kproto.to_pickle('rfmd_kproto.pkl')
+
+# END

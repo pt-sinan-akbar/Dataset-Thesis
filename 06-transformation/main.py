@@ -5,8 +5,15 @@ import numpy as np
 from sklearn.preprocessing import PowerTransformer
 import matplotlib.pyplot as plt
 
+# Custom for python script
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
+
 with open('../05-outlier/rfmd_clean.pkl', 'rb') as file:
     df_clean = pickle.load(file)
+    
+# END
 
 # check the original skewness of the data
 frequency_skew = df_clean['frequency'].skew()
@@ -149,8 +156,8 @@ plt.tight_layout()
 # plt.show()
 plt.savefig('frequency_transformations.png', dpi=300, bbox_inches='tight')
 
-# based of the skewness, the best transformation is boxcox
-RFMD_features['frequency_log'] = RFMD_features['frequency_yeoh']
+# based of the skewness, the best transformation is yeo-johnson
+RFMD_features['frequency_selected'] = RFMD_features['frequency_yeoh']
 
 # Monetary transformation
 
@@ -241,26 +248,26 @@ plt.tight_layout()
 # plt.show()
 plt.savefig('monetary_transformations.png', dpi=300, bbox_inches='tight')
 
-# based of the skewness, the best transformation is boxcox
-RFMD_features['monetary_log'] = RFMD_features['monetary_yeoh']
+# based of the skewness, the best transformation is yeo-johnson
+RFMD_features['monetary_selected'] = RFMD_features['monetary_yeoh']
 
 # Post transformation
 
-frequency_skew = RFMD_features['frequency_log'].skew()
-monetary_skew = RFMD_features['monetary_log'].skew()
+frequency_skew = RFMD_features['frequency_selected'].skew()
+monetary_skew = RFMD_features['monetary_selected'].skew()
 recency_skew = RFMD_features['recency'].skew()
 
 sns.set_theme(style='whitegrid')
 
 fig, axes = plt.subplots(1, 3, figsize=(16, 6))
 
-sns.histplot(RFMD_features['frequency_log'], kde=True, ax=axes[0], color='skyblue')
+sns.histplot(RFMD_features['frequency_selected'], kde=True, ax=axes[0], color='skyblue')
 axes[0].set_title(f'Frequency Distribution (Skewness: {frequency_skew:.2f})', fontsize=14)
 axes[0].set_xlabel('Frequency')
 axes[0].set_ylabel('Count')
 axes[0].text(0.5, 0.5, f'Skewness: {frequency_skew:.2f}', transform=axes[0].transAxes, horizontalalignment='right', color='black', weight='bold', fontsize=12)
 
-sns.histplot(RFMD_features['monetary_log'], kde=True, ax=axes[1], color='salmon')
+sns.histplot(RFMD_features['monetary_selected'], kde=True, ax=axes[1], color='salmon')
 axes[1].set_title(f'Monetary Distribution (Skewness: {monetary_skew:.2f})', fontsize=14)
 axes[1].set_xlabel('Monetary')
 axes[1].set_ylabel('Count')
@@ -282,14 +289,14 @@ fig, axes = plt.subplots(1, 4, figsize=(16, 6))
 sns.boxplot(x='frequency', data=RFMD_features, ax=axes[0])
 axes[0].set_title('Frequency Boxplot')
 
-sns.boxplot(x='frequency_log', data=RFMD_features, ax=axes[1])
-axes[1].set_title('Log Frequency Boxplot')
+sns.boxplot(x='frequency_selected', data=RFMD_features, ax=axes[1])
+axes[1].set_title('Yeo-Johnson Frequency Boxplot')
 
 sns.boxplot(x='monetary', data=RFMD_features, ax=axes[2])
 axes[2].set_title('Monetary Boxplot')
 
-sns.boxplot(x='monetary_log', data=RFMD_features, ax=axes[3])
-axes[3].set_title('Log Monetary Boxplot')
+sns.boxplot(x='monetary_selected', data=RFMD_features, ax=axes[3])
+axes[3].set_title('Yeo-Johnson Monetary Boxplot')
 
 plt.tight_layout()
 # plt.show()
@@ -299,7 +306,7 @@ plt.savefig('boxplots_comparison.png', dpi=300, bbox_inches='tight')
 print(RFMD_features.describe([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99]).T)
 
 # select the features with the least skewness
-RFMD_features = RFMD_features[['recency', 'frequency_log', 'monetary_log']]
+RFMD_features = RFMD_features[['recency', 'frequency_selected', 'monetary_selected']]
 print(RFMD_features)
 
 # copy df
@@ -311,4 +318,8 @@ RFMD_transformed.columns = ['recency', 'frequency', 'monetary']
 # describe %1 %5 %10 %25 %50 %75 %90 %95 %99
 print(RFMD_transformed.describe([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99]).T)
 
+# Custom for python script
+
 RFMD_transformed.to_pickle('rfmd_transformed.pkl')
+
+# END
