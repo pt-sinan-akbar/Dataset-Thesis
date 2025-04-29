@@ -8,10 +8,12 @@ import utils
 
 class Hierarchical(object):
     def __init__(self):
-        self.rfm_hierarchical_clean = None
         self.rfm_hierarchical = None
+        self.rfm_hierarchical_clean = None
         self.rfm_numerical = utils.import_pickle('../08-rfmd-final-processing/rfm_numerical.pkl')
-        self.df_clean = utils.import_pickle('../05-outlier/rfmd_clean.pkl')
+        self.df_clean = pd.DataFrame(utils.import_pickle('../05-outlier/rfmd_clean.pkl'),
+                                     columns=["recency", "frequency", "monetary", "State"])
+        self.rfmd_final = utils.import_pickle('../08-rfmd-final-processing/rfmd_final.pkl')
         utils.widen_output(pd)
 
     def run_dendogram(self):
@@ -19,8 +21,10 @@ class Hierarchical(object):
 
         # Calculate the linkage matrix
         # 'ward' minimizes the variance within each cluster, requires Euclidean distance
+        print("Calculating linkage")
         linked = linkage(self.rfm_numerical, method='ward', metric='euclidean')
 
+        print("Plotting dendogram")
         # Plot dendogram
         plt.figure(figsize=(12, 7))
         dendrogram(linked,
@@ -50,7 +54,8 @@ class Hierarchical(object):
         # Add labels to your data
         rfm_hierarchical = self.rfm_numerical.copy()
         rfm_hierarchical['Cluster'] = hierarchical_labels
-        print(f"Cluster counts:\n{rfm_hierarchical['Cluster_Hierarchical'].value_counts()}")
+        rfm_hierarchical['State'] = self.rfmd_final['State']
+        print(f"Cluster counts:\n{rfm_hierarchical['Cluster'].value_counts()}")
         print(rfm_hierarchical.head())
 
         rfm_hierarchical_clean = self.df_clean.copy()
@@ -60,14 +65,12 @@ class Hierarchical(object):
         print("hierarchical count:", len(hierarchical_labels))
         print(rfm_hierarchical_clean.head())
 
-        rfm_hierarchical.to_pickle('rfm_hierarchical.pkl')
-        rfm_hierarchical_clean.to_pickle('rfm_hierarchical_clean')
         self.rfm_hierarchical = rfm_hierarchical
         self.rfm_hierarchical_clean = rfm_hierarchical_clean
 
     def summary(self):
         print("--- Summary ---")
-        if not self.rfm_hierarchical or not self.rfm_hierarchical_clean:
+        if self.rfm_hierarchical is None or self.rfm_hierarchical_clean is None:
             raise ValueError("No hierarchical clustering data available. Please run agglomerative first.")
 
         # summary
@@ -78,7 +81,7 @@ class Hierarchical(object):
         print(utils.summarize_cluster(self.rfm_hierarchical_clean, False))
 
         # plot 3d clusters
-        utils.plot_3d_clusters(self.rfm_hierarchical_clean, "Hierarchical")
+        utils.plot_3d_clusters(self.rfm_hierarchical, "Hierarchical")
 
     def export_result(self):
         print("--- Exporting Result ---")
@@ -92,19 +95,19 @@ if __name__ == "__main__":
 
     # check args
     parser = argparse.ArgumentParser()
-    parser.add_argument('--chosen_k')
+    parser.add_argument('--chosen_k', type=int)
+    parser.add_argument('--run_dendo', default=False)
     cl_args = parser.parse_args()
     chosen_k = cl_args.chosen_k
+    run_dendo = cl_args.run_dendo
 
     # gow
-    if not chosen_k:
-        print("No K in args, will run dendogram only")
+    if run_dendo:
+        print("WARNING: this will take 63.3GiB of RAM, you have ~5 secs to terminate this process")
         hierarchical.run_dendogram()
+    elif chosen_k:
+        hierarchical.agglomerative(chosen_k)
+        hierarchical.summary()
+        hierarchical.export_result()
     else:
-        if not isinstance(chosen_k, int):
-            raise ValueError("chosen_k_hierarchical must be an integer.")
-        else:
-            hierarchical.run_dendogram()
-            hierarchical.agglomerative(chosen_k)
-            hierarchical.summary()
-            hierarchical.export_result()
+        print("Please define arg --run_dendo=True to run dendogram or --chosen_k={int} to run agglomerative etc")
