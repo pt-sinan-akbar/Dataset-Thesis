@@ -1,0 +1,57 @@
+Importing ../08-rfmd-final-processing/rfm_numerical.pkl
+Importing ../05-outlier/rfmd_clean.pkl
+Importing ../08-rfmd-final-processing/rfmd_final.pkl
+--- Agglomerative Clustering with k = 4 ---
+Cluster counts:
+Cluster
+0    29332
+2    28079
+3    21805
+1    12177
+Name: count, dtype: int64
+    recency  frequency  monetary  Cluster  State
+0 -0.825508   -0.39207  0.316722        2      4
+1 -0.805830   -0.39207 -1.923088        3      4
+2  1.962187   -0.39207 -0.285795        0      3
+3  0.545382   -0.39207 -1.210315        3      1
+4  0.328926   -0.39207  0.681231        0      4
+Clean data sanity test:
+raw rfm count: 91393
+hierarchical count: 91393
+   recency  frequency  monetary      State  Cluster
+0      111          1    141.90  Southeast        2
+1      114          1     27.19  Southeast        3
+2      536          1     86.22      South        0
+3      320          1     43.62      North        3
+4      287          1    196.89  Southeast        0
+--- Summary ---
+Cluster summary:
+           Mean R    Mean F    Mean M  Number of Customer  Percentage (%)  \
+Cluster                                                                     
+0        1.032423 -0.392070  0.088705               29332           32.09   
+1        0.008364  2.550564  0.891137               12177           13.32   
+2       -0.779833 -0.392070  0.386178               28079           30.72   
+3       -0.389266 -0.392070 -1.114275               21805           23.86   
+
+         Mid-West  North  Northeast  South  Southeast  
+Cluster                                                
+0            1697    691       3203   4416      19325  
+1             749    197       1025   1774       8432  
+2            1730    575       2995   3993      18786  
+3            1170    240       1385   2929      16081  
+Cluster summary (Original Data):
+             Mean R    Mean F      Mean M  Number of Customer  Percentage (%)  \
+Cluster                                                                         
+0        394.252216  1.000000  172.689034               29332           32.09   
+1        238.128603  2.151187  359.730731               12177           13.32   
+2        117.963353  1.000000  197.209451               28079           30.72   
+3        177.507636  1.000000   49.861051               21805           23.86   
+
+         Mid-West  North  Northeast  South  Southeast  
+Cluster                                                
+0            1697    691       3203   4416      19325  
+1             749    197       1025   1774       8432  
+2            1730    575       2995   3993      18786  
+3            1170    240       1385   2929      16081  
+--- Exporting Result ---
+Exported to file
