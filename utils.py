@@ -1,3 +1,4 @@
+import pandas
 import pandas as pd
 from matplotlib.colors import ListedColormap
 import matplotlib.pyplot as plt
@@ -22,8 +23,7 @@ def plot_3d_clusters(df: pd.DataFrame, algorithm_name: str = "Clustering", show_
 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')
-
-    scatter = ax.scatter(
+    ax.scatter(
         df['recency'],
         df['frequency'],
         df['monetary'],
@@ -32,7 +32,6 @@ def plot_3d_clusters(df: pd.DataFrame, algorithm_name: str = "Clustering", show_
         s=20,
         alpha=0.7
     )
-
     ax.set_xlabel('recency')
     ax.set_ylabel('frequency')
     ax.set_zlabel('monetary')
@@ -146,3 +145,14 @@ def summarize_cluster(df, remap_state=True, debug=False):
         print(summary.head())
 
     return summary
+
+def widen_output(pd_loc: pandas):
+    pd_loc.set_option('display.max_columns', None)
+    pd_loc.set_option('display.max_colwidth', None)
+    return pd_loc
+    
+def import_pickle(pickle_location):
+    print("Importing " + pickle_location)
+    with open(pickle_location, 'rb') as dataset_file:
+        dataset = pickle.load(dataset_file)
+        return dataset
