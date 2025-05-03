@@ -1,0 +1,68 @@
+Importing ../08-rfmd-final-processing/rfmd_final.pkl
+Importing ../08-rfmd-final-processing/rfm_numerical.pkl
+Importing ../05-outlier/rfmd_clean.pkl
+   recency  frequency  monetary      State  Cluster
+0      111          1    141.90  Southeast        0
+1      114          1     27.19  Southeast        0
+2      536          1     86.22      South        0
+3      320          1     43.62      North        0
+4      287          1    196.89  Southeast        0
+GMM cluster summary:
+           Mean R    Mean F    Mean M  Number of Customer  Percentage (%)  \
+Cluster                                                                     
+0       -0.001286 -0.392070 -0.136985               79216           86.68   
+1        0.008364  2.550564  0.891137               12177           13.32   
+
+         Mid-West  North  Northeast  South  Southeast  
+Cluster                                                
+0            4597   1506       7583  11338      54192  
+1             749    197       1025   1774       8432  
+GMM cluster summary (Original Data):
+             Mean R    Mean F      Mean M  Number of Customer  Percentage (%)  \
+Cluster                                                                         
+0        236.657405  1.000000  147.570934               79216           86.68   
+1        238.128603  2.151187  359.730731               12177           13.32   
+
+         Mid-West  North  Northeast  South  Southeast  
+Cluster                                                
+0            4597   1506       7583  11338      54192  
+1             749    197       1025   1774       8432  
+
+Summarizing cluster information v2...
+
+Cluster percentages and state distribution
+         Number of Customer  Percentage (%)  Mid-West  North  Northeast  \
+Cluster                                                                   
+0                     79216           86.68      4597   1506       7583   
+1                     12177           13.32       749    197       1025   
+
+         South  Southeast  
+Cluster                    
+0        11338      54192  
+1         1774       8432  
+
+Per-cluster statistic
+
+Cluster 0
+             count        mean         std    min     1%     5%    10%  \
+recency    79216.0  236.657405  152.695402   0.00   8.00  22.00  40.00   
+frequency  79216.0    1.000000    0.000000   1.00   1.00   1.00   1.00   
+monetary   79216.0  147.570934  177.038348  10.07  22.34  31.77  38.09   
+
+              25%     50%     75%      90%     95%      99%      max  
+recency    113.00  218.00  345.00  464.500  519.00  574.000   694.00  
+frequency    1.00    1.00    1.00    1.000    1.00    1.000     1.00  
+monetary    58.69   99.36  166.58  278.665  412.16  957.573  2133.69  
+
+Cluster 1
+             count        mean         std   min     1%      5%     10%  \
+recency    12177.0  238.128603  150.893568  0.00   8.00  24.000  44.000   
+frequency  12177.0    2.151187    0.358245  2.00   2.00   2.000   2.000   
+monetary   12177.0  359.730731  315.441553  9.59  32.38  58.288  86.064   
+
+              25%     50%     75%      90%      95%       99%      max  
+recency    115.00  219.00  345.00  463.000  516.200   574.000   694.00  
+frequency    2.00    2.00    2.00    3.000    3.000     3.000     3.00  
+monetary   150.06  267.74  459.45  749.324  990.292  1642.782  2132.16  
+Saving to rfmd_gmm.pkl
+Saving to rfmd_gmm_clean.pkl

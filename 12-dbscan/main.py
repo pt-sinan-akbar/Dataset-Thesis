@@ -258,7 +258,7 @@ print(DBSCAN_df_original.head())
 RFMD_final.rename(columns={'DBSCAN_Cluster': 'Cluster'}, inplace=True)
 RFMD_final.drop(columns=['Code'], inplace=True)
 
-utils.plot_3d_clusters(RFMD_final, "DBSCAN")
+# utils.plot_3d_clusters(RFMD_final, "DBSCAN")
 
 # summary
 print("DBSCAN cluster summary:")
