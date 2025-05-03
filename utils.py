@@ -51,58 +51,30 @@ def plot_3d_clusters(df: pd.DataFrame, algorithm_name: str = "Clustering", show_
         plt.show()
     plt.savefig(algorithm_name + '_3d_cluster.png', dpi=300, bbox_inches='tight')
 
-def summarize_cluster2(df, remap_state=True, debug=False):
-    import numpy as np
-
-    cluster_size = df['Cluster'].value_counts().sort_index()
-    total_samples = len(df)
-    percentages = ((cluster_size / total_samples) * 100).round(2)
-
-    agg_funcs = ['mean', 'min', 'max',
-                 lambda x: np.percentile(x, 25),
-                 lambda x: np.percentile(x, 50),
-                 lambda x: np.percentile(x, 75)]
-
-    agg_func_names = ['Mean', 'Min', 'Max', 'Q1', 'Median', 'Q3']
-
-    numeric_cols = [col for col in df.columns if col not in ['Cluster', 'State']]
-    agg_dict = {col: agg_funcs for col in numeric_cols}
-
-    summary = df.groupby('Cluster').agg(agg_dict)
-
-    # Format columns: 'recency_mean' => 'Recency Mean'
-    summary.columns = [
-        f"{col.capitalize()} {stat}" for col in numeric_cols for stat in agg_func_names
-    ]
-
-    if debug:
-        print("Step 1: Basic Aggregates")
-        print(summary.head())
-
-    summary['Number of Customer'] = cluster_size
-    summary['Percentage (%)'] = percentages
-
-    if debug:
-        print("Step 2: Added Size & Percent")
-        print(summary.head())
-
-    # State breakdown
-    state_summary = df.groupby('Cluster')['State'].value_counts().unstack().fillna(0)
-
+# Function to summarize cluster customer percentages and state distribution, and per-cluster statistic 
+# p.s. for data with numerical state pls give remap_state=True
+def summarize_cluster_v2(df, remap_state=False):
+    print("\nSummarizing cluster information v2...")
+    
+    print("\nCluster percentages and state distribution")
+    cluster_summary = df.groupby('Cluster').size().reset_index(name='Number of Customer')
+    total_customers = cluster_summary['Number of Customer'].sum()
+    cluster_summary['Percentage (%)'] = (cluster_summary['Number of Customer'] / total_customers * 100).round(2)
+    
+    state_summary = df.groupby(['Cluster', 'State']).size().unstack(fill_value=0)
     if remap_state:
         state_summary.columns = state_summary.columns.map(encoded_to_state)
+    
+    combined_summary = pd.concat([cluster_summary.set_index('Cluster'), state_summary], axis=1)
+    print(combined_summary)
 
-    if debug:
-        print("Step 3: State Summary")
-        print(state_summary.head())
-
-    summary = pd.concat([summary, state_summary], axis=1)
-
-    if debug:
-        print("Step 4: Final Summary")
-        print(summary.head())
-
-    return summary.round(2)
+    print("\nPer-cluster statistic")
+    for cluster in sorted(df['Cluster'].unique()):
+        cluster_data = df[df['Cluster'] == cluster]
+        stats = cluster_data.describe(percentiles=[0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99]).T
+        stats = stats[stats.index != 'Cluster']
+        print('\nCluster', cluster)
+        print(stats)
 
 # cluster summary
 def summarize_cluster(df, remap_state=True, debug=False):
@@ -156,3 +128,10 @@ def import_pickle(pickle_location):
     with open(pickle_location, 'rb') as dataset_file:
         dataset = pickle.load(dataset_file)
         return dataset
+    
+def export_pickle(data, pickle_name, is_not_df: bool = False):
+    print("Saving to", pickle_name)
+    if is_not_df:
+        pickle.dump(data, open(pickle_name, 'wb'))
+    else:
+        data.to_pickle(pickle_name)

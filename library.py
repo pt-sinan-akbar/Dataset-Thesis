@@ -21,5 +21,5 @@ from folium.plugins import HeatMap
 from sklearn.neighbors import NearestNeighbors
 from sklearn.mixture import GaussianMixture
 import matplotlib.pyplot as plt
-from utils import plot_3d_clusters, summarize_cluster, summarize_cluster2
+import utils
 import pickle

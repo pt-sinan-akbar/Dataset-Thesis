@@ -1,21 +1,14 @@
-import pickle
 import pandas as pd
 from kmodes.kprototypes import KPrototypes
-from utils import plot_3d_clusters, summarize_cluster
+import utils
 
 # Custom for python script
-pd.set_option('display.max_columns', None)
-pd.set_option('display.max_colwidth', None)
+utils.widen_output(pd)
 
-with open('../05-outlier/rfmd_clean.pkl', 'rb') as file:
-    df_clean = pickle.load(file)
-with open('../08-rfmd-final-processing/encoded_to_state.pkl', 'rb') as file:
-    encoded_to_state = pickle.load(file)
-with open('../08-rfmd-final-processing/state_mapping.pkl', 'rb') as file:
-    state_mapping = pickle.load(file)
-with open('../08-rfmd-final-processing/rfmd_final.pkl', 'rb') as file:
-    RFMD_final = pickle.load(file)
-
+df_clean = utils.import_pickle('../05-outlier/rfmd_clean.pkl')
+encoded_to_state = utils.import_pickle('../08-rfmd-final-processing/encoded_to_state.pkl')
+state_mapping = utils.import_pickle('../08-rfmd-final-processing/state_mapping.pkl')
+RFMD_final = utils.import_pickle('../08-rfmd-final-processing/rfmd_final.pkl')
 # END
 
 # Setelah dapet cluster yg bagus dari atas
@@ -42,11 +35,16 @@ print(kproto_rfmd_raw.head())
 
 # summary
 print("Cluster summary:")
-print(summarize_cluster(rfmd_kproto))
+print(utils.summarize_cluster(rfmd_kproto))
 
 # print("KProto cluster summary (Original Data):")
 print("Cluster summary (Original Data):")
-print(summarize_cluster(kproto_rfmd_raw, False))
+print(utils.summarize_cluster(kproto_rfmd_raw, False))
 
 # plot 3d clusters
-plot_3d_clusters(kproto_rfmd_raw, "K-Prototypes")
+utils.plot_3d_clusters(kproto_rfmd_raw, "K-Prototypes")
+
+utils.summarize_cluster_v2(kproto_rfmd_raw)
+
+utils.export_pickle(rfmd_kproto, "rfmd_kproto.pkl")
+utils.export_pickle(kproto_rfmd_raw, "rfmd_kproto_clean.pkl")

@@ -1,21 +1,13 @@
-import pickle
 import pandas as pd
 from sklearn.mixture import GaussianMixture
 import matplotlib.pyplot as plt
-from utils import plot_3d_clusters, summarize_cluster
+import utils
 
 # Custom for python script
-
-pd.set_option('display.max_columns', None)
-pd.set_option('display.max_colwidth', None)
-
-with open('../08-rfmd-final-processing/rfmd_final.pkl', 'rb') as file:
-    RFMD_final = pickle.load(file)
-with open('../08-rfmd-final-processing/rfm_numerical.pkl', 'rb') as file:
-    RFM_numerical = pickle.load(file)
-with open('../05-outlier/rfmd_clean.pkl', 'rb') as file:
-    df_clean = pickle.load(file)
-
+utils.widen_output(pd)
+RFMD_final = utils.import_pickle('../08-rfmd-final-processing/rfmd_final.pkl')
+RFM_numerical = utils.import_pickle('../08-rfmd-final-processing/rfm_numerical.pkl')
+df_clean = utils.import_pickle('../05-outlier/rfmd_clean.pkl')
 # END
 
 ### Find the optimal number of clusters using the BIC and AIC criteria
@@ -57,7 +49,7 @@ gmm_rfm_raw['Cluster'] = labels
 print(gmm_rfm_raw.head())
 
 # Create a 3D scatter plot
-plot_3d_clusters(data_with_clusters, "Gaussian Mixture Model")
+utils.plot_3d_clusters(data_with_clusters, "Gaussian Mixture Model")
 
 # add the cluster labels to the data
 gmm_data_with_categorical = pd.concat([data_with_clusters, RFMD_final['State']], axis=1)
@@ -68,8 +60,13 @@ data_with_clusters['Cluster'] = labels
 
 # display cluster unique values on cluster with categorical
 print("GMM cluster summary:")
-summarize_cluster(gmm_data_with_categorical)
+print(utils.summarize_cluster(gmm_data_with_categorical))
 
 # cluster summary with raw data
 print("GMM cluster summary (Original Data):")
-summarize_cluster(gmm_rfm_raw, False)
+print(utils.summarize_cluster(gmm_rfm_raw, False))
+
+utils.summarize_cluster_v2(gmm_rfm_raw)
+
+utils.export_pickle(gmm_data_with_categorical, "rfmd_gmm.pkl")
+utils.export_pickle(gmm_rfm_raw, "rfmd_gmm_clean.pkl")

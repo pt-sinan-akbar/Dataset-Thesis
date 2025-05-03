@@ -71,7 +71,13 @@ class Hierarchical(object):
     def summary(self):
         print("--- Summary ---")
         if self.rfm_hierarchical is None or self.rfm_hierarchical_clean is None:
-            raise ValueError("No hierarchical clustering data available. Please run agglomerative first.")
+            print("No hierarchical clustering data available. trying to load from file")
+            try:
+                self.rfm_hierarchical = utils.import_pickle('rfm_hierarchical.pkl')
+                self.rfm_hierarchical_clean = utils.import_pickle('rfm_hierarchical_clean.pkl')
+            except FileNotFoundError:
+                print("No file found, please run agglomerative first")
+                return
 
         # summary
         print("Cluster summary:")
@@ -79,14 +85,16 @@ class Hierarchical(object):
 
         print("Cluster summary (Original Data):")
         print(utils.summarize_cluster(self.rfm_hierarchical_clean, False))
+        
+        utils.summarize_cluster_v2(self.rfm_hierarchical_clean)
 
         # plot 3d clusters
         utils.plot_3d_clusters(self.rfm_hierarchical, "Hierarchical")
 
     def export_result(self):
         print("--- Exporting Result ---")
-        self.rfm_hierarchical_clean.to_pickle('rfm_hierarchical_clean.pkl')
-        self.rfm_hierarchical.to_pickle('rfm_hierarchical.pkl')
+        utils.export_pickle(self.rfm_hierarchical_clean, 'rfm_hierarchical_clean.pkl')
+        utils.export_pickle(self.rfm_hierarchical, 'rfm_hierarchical.pkl')
         print("Exported to file")
 
 
@@ -97,9 +105,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--chosen_k', type=int)
     parser.add_argument('--run_dendo', default=False)
+    parser.add_argument('--summary_only', type=bool, default=False)
     cl_args = parser.parse_args()
     chosen_k = cl_args.chosen_k
     run_dendo = cl_args.run_dendo
+    summary_only = cl_args.summary_only
 
     # gow
     if run_dendo:
@@ -109,5 +119,7 @@ if __name__ == "__main__":
         hierarchical.agglomerative(chosen_k)
         hierarchical.summary()
         hierarchical.export_result()
+    elif summary_only:
+        hierarchical.summary()
     else:
-        print("Please define arg --run_dendo=True to run dendogram or --chosen_k={int} to run agglomerative etc")
+        print("Please define arg --run_dendo=True to run dendogram or --chosen_k={int} to run agglomerative etc or --summary_only=True to just show summary")
