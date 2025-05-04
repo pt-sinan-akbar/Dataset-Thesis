@@ -52,5 +52,19 @@ print(summarize_cluster(kmeans_rfm_raw, False))
 
 utils.summarize_cluster_v2(kmeans_rfm_raw)
 
+# evaluation metrics
+eval_results = utils.evaluation_metrics(
+    df=knn_data_with_categorical,
+    algorithm="KMeans",
+    cluster_range=range(2, 7),
+)
+print("Evaluation results:")
+print(eval_results)
+
+print("Plot evaluation metrics")
+utils.plot_evaluation_metrics(eval_results)
+
+
 utils.export_pickle(knn_data_with_categorical, "rfm_kmeans.pkl")
 utils.export_pickle(kmeans_rfm_raw, "rfm_kmeans_clean.pkl")
+utils.export_pickle(eval_results, "rfm_kmeans_eval.pkl")

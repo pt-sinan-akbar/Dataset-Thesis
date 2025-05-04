@@ -1,4 +1,4 @@
-Importing ../08-rfmd-final-processing/rfmd_final.pkl
+ Importing ../08-rfmd-final-processing/rfmd_final.pkl
 Importing ../08-rfmd-final-processing/rfm_numerical.pkl
 Importing ../05-outlier/rfmd_clean.pkl
 raw row count: 91393

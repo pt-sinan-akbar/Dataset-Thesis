@@ -269,5 +269,19 @@ print(utils.summarize_cluster(DBSCAN_df_original))
 
 utils.summarize_cluster_v2(DBSCAN_df_original)
 
+# evaluation metrics
+eval_results = utils.evaluation_metrics(
+    df=RFMD_final,
+    algorithm="DBSCAN",
+    eps_values=eps_range,
+    min_samples=5,
+)
+print("Evaluation results:")
+print(eval_results)
+
+print("Plot evaluation metrics")
+utils.plot_evaluation_metrics(eval_results)
+
 utils.export_pickle(RFMD_final, "rfmd_dbscan.pkl")
 utils.export_pickle(DBSCAN_df_original, "rfmd_dbscan_clean.pkl")
+utils.export_pickle(eval_results, "rfm_dbscan_eval.pkl")

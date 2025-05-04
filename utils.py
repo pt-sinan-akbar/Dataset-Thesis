@@ -1,8 +1,14 @@
 import pandas
 import pandas as pd
+from kmodes.kprototypes import KPrototypes
 from matplotlib.colors import ListedColormap
 import matplotlib.pyplot as plt
 import pickle
+import numpy as np
+from sklearn.cluster import DBSCAN, KMeans, AgglomerativeClustering
+
+from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score
+from sklearn.mixture import GaussianMixture
 
 with open('../08-rfmd-final-processing/encoded_to_state.pkl', 'rb') as file:
     encoded_to_state = pickle.load(file)
@@ -135,3 +141,126 @@ def export_pickle(data, pickle_name, is_not_df: bool = False):
         pickle.dump(data, open(pickle_name, 'wb'))
     else:
         data.to_pickle(pickle_name)
+
+
+def evaluation_metrics(df, algorithm, cluster_range=None, eps_values=None, min_samples=5):
+    results = {
+        'algorithm': [],
+        'params': [],
+        'silhouette': [],
+        'davies_bouldin': [],
+        'calinski_harabasz': []
+    }
+
+    X_numeric = pd.DataFrame(df, columns=['recency', 'frequency', 'monetary'])
+    X_categorical = [3]
+
+    if algorithm == "KMeans":
+        for k in cluster_range:
+            kmeans = KMeans(n_clusters=k, n_init=10)
+            labels = kmeans.fit_predict(X_numeric)
+
+            results['algorithm'].append('KMeans')
+            results['params'].append({'k': k})
+            results['silhouette'].append(silhouette_score(X_numeric, labels))
+            results['davies_bouldin'].append(davies_bouldin_score(X_numeric, labels))
+            results['calinski_harabasz'].append(calinski_harabasz_score(X_numeric, labels))
+
+    elif algorithm == "DBSCAN":
+        if eps_values is None:
+            raise ValueError("eps_values must be provided for DBSCAN.")
+        for eps in eps_values:
+            dbscan = DBSCAN(eps=eps, min_samples=min_samples)
+            labels = dbscan.fit_predict(X_numeric)
+
+            num_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+            if num_clusters > 1:
+                core_mask = labels != -1
+                silhouette = silhouette_score(X_numeric[core_mask], labels[core_mask])
+                db_score = davies_bouldin_score(X_numeric[core_mask], labels[core_mask])
+                ch_score = calinski_harabasz_score(X_numeric[core_mask], labels[core_mask])
+            else:
+                silhouette, db_score, ch_score = np.nan, np.nan, np.nan
+
+            results['algorithm'].append('DBSCAN')
+            results['params'].append({'eps': eps, 'min_samples': min_samples})
+            results['silhouette'].append(silhouette)
+            results['davies_bouldin'].append(db_score)
+            results['calinski_harabasz'].append(ch_score)
+
+    elif algorithm == "GMM":
+        for k in cluster_range:
+            gmm = GaussianMixture(n_components=k, covariance_type='full', random_state=42)
+            labels = gmm.fit_predict(X_numeric)
+
+            results['algorithm'].append('GMM')
+            results['params'].append({'n_components': k})
+            results['silhouette'].append(silhouette_score(X_numeric, labels))
+            results['davies_bouldin'].append(davies_bouldin_score(X_numeric, labels))
+            results['calinski_harabasz'].append(calinski_harabasz_score(X_numeric, labels))
+
+    elif algorithm == "Hierarchical":
+        for k in cluster_range:
+            hierarchical = AgglomerativeClustering(n_clusters=k, linkage='ward')
+            labels = hierarchical.fit_predict(X_numeric)
+
+            results['algorithm'].append('Hierarchical')
+            results['params'].append({'n_clusters': k})
+            results['silhouette'].append(silhouette_score(X_numeric, labels))
+            results['davies_bouldin'].append(davies_bouldin_score(X_numeric, labels))
+            results['calinski_harabasz'].append(calinski_harabasz_score(X_numeric, labels))
+
+    elif algorithm == "KPrototypes":
+        for k in cluster_range:
+            kproto = KPrototypes(n_clusters=k, init='Huang', gamma=1.0, n_init=5, verbose=0)
+            labels = kproto.fit_predict(df, categorical=X_categorical)
+
+            results['algorithm'].append('KPrototypes')
+            results['params'].append({'k': k})
+            results['silhouette'].append(silhouette_score(X_numeric, labels))
+            results['davies_bouldin'].append(davies_bouldin_score(X_numeric, labels))
+            results['calinski_harabasz'].append(calinski_harabasz_score(X_numeric, labels))
+
+    else:
+        raise ValueError(f"Unsupported algorithm: {algorithm}")
+
+    return pd.DataFrame(results)
+
+
+def plot_evaluation_metrics(results):
+    # Determine whether to use 'k' or 'eps' based on the algorithm
+    if 'k' in results['params'][0]:
+        results['x_param'] = results['params'].apply(lambda x: x.get('k') or x.get('n_components'))
+        x_label = 'Number of Clusters (k)'
+    elif 'eps' in results['params'][0]:
+        results['x_param'] = results['params'].apply(lambda x: x.get('eps'))
+        x_label = 'Epsilon (eps)'
+    else:
+        raise ValueError("Unsupported parameter in 'params'. Expected 'k' or 'eps'.")
+
+    # Create subplots
+    fig, axs = plt.subplots(3, 1, figsize=(10, 15))
+
+    # Plot Silhouette Score (higher is better)
+    axs[0].plot(results['x_param'], results['silhouette'], marker='o', linestyle='-', color='blue')
+    axs[0].set_title('Silhouette Score (Higher is Better)')
+    axs[0].set_xlabel(x_label)
+    axs[0].set_ylabel('Silhouette Score')
+    axs[0].grid(True)
+
+    # Plot Davies-Bouldin Score (lower is better)
+    axs[1].plot(results['x_param'], results['davies_bouldin'], marker='o', linestyle='-', color='red')
+    axs[1].set_title('Davies-Bouldin Score (Lower is Better)')
+    axs[1].set_xlabel(x_label)
+    axs[1].set_ylabel('Davies-Bouldin Score')
+    axs[1].grid(True)
+
+    # Plot Calinski-Harabasz Score (higher is better)
+    axs[2].plot(results['x_param'], results['calinski_harabasz'], marker='o', linestyle='-', color='green')
+    axs[2].set_title('Calinski-Harabasz Score (Higher is Better)')
+    axs[2].set_xlabel(x_label)
+    axs[2].set_ylabel('Calinski-Harabasz Score')
+    axs[2].grid(True)
+
+    plt.tight_layout()
+    plt.savefig('evaluation_metrics.png', dpi=300, bbox_inches='tight')

@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn.mixture import GaussianMixture
 import matplotlib.pyplot as plt
 import utils
+from utils import evaluation_metrics
 
 # Custom for python script
 utils.widen_output(pd)
@@ -68,5 +69,21 @@ print(utils.summarize_cluster(gmm_rfm_raw, False))
 
 utils.summarize_cluster_v2(gmm_rfm_raw)
 
+# evaluation metrics
+eval_results = evaluation_metrics(
+    df=gmm_rfm_raw,
+    algorithm="GMM",
+    cluster_range=range(2, 7)
+)
+print("Evaluation results:")
+print(eval_results)
+
+print("Plot evaluation metrics")
+utils.plot_evaluation_metrics(eval_results)
+
 utils.export_pickle(gmm_data_with_categorical, "rfmd_gmm.pkl")
 utils.export_pickle(gmm_rfm_raw, "rfmd_gmm_clean.pkl")
+utils.export_pickle(eval_results, "rfm_gmm_eval.pkl")
+
+
+
