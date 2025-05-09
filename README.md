@@ -1,6 +1,6 @@
 # Customer Segmentation using Clustering Algorithms on RFM/RFMD Data
 
-This repository contains the source code for our undergraduate thesis project, where our team compares the performance of various clustering algorithms applied to customer segmentation using RFM (Recency, Frequency, Monetary) and RFMD (Recency, Frequency, Monetary, Duration) data.
+This repository contains the source code for our undergraduate thesis project, where our team compares the performance of various clustering algorithms applied to customer segmentation using RFM (Recency, Frequency, Monetary) and RFMD (Recency, Frequency, Monetary, Demography) data.
 
 ## 📌 Project Overview
 
