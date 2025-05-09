@@ -35,6 +35,7 @@ set PYTHONPATH=%cd%
 $env:PYTHONPATH = (Get-Location).Path
 ```
 **3. Run the Program**
+
 Run ```bash python main.py``` to any clustering algorithm you want to run
 
 ## 👥 Authors
