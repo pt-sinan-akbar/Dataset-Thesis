@@ -1,3 +1,43 @@
 Importing ../08-rfmd-final-processing/rfmd_final.pkl
-Using precomputed Huang costs...
-[302945.9999999998, 200403.4673796627, 144504.98638342315, 111923.87470059782, 98687.1746289738, 90285.75967918534, 82880.50360656573, 74927.28467282065, 70738.93183310021, 66556.70413009671]
+Running Huang Elbow Method...
+[2025-05-07 16:41:58] Processing K=1...
+[2025-05-07 16:43:55] K = 1, Huang Cost = 302947.9999999984
+[2025-05-07 16:43:55] Processing K=2...
+[2025-05-07 16:55:54] K = 2, Huang Cost = 200397.5126547657
+[2025-05-07 16:55:54] Processing K=3...
+[2025-05-07 17:07:52] K = 3, Huang Cost = 144499.1736882579
+[2025-05-07 17:07:52] Processing K=4...
+[2025-05-07 17:25:02] K = 4, Huang Cost = 111856.6571584246
+[2025-05-07 17:25:02] Processing K=5...
+[2025-05-07 17:52:34] K = 5, Huang Cost = 98594.2439447426
+[2025-05-07 17:52:34] Processing K=6...
+[2025-05-07 18:28:22] K = 6, Huang Cost = 90201.61211915832
+[2025-05-07 18:28:22] Processing K=7...
+[2025-05-07 19:12:34] K = 7, Huang Cost = 82231.18385391243
+[2025-05-07 19:12:34] Processing K=8...
+[2025-05-07 19:49:38] K = 8, Huang Cost = 74867.38920003947
+[2025-05-07 19:49:38] Processing K=9...
+[2025-05-07 20:34:58] K = 9, Huang Cost = 70673.36812059133
+[2025-05-07 20:34:58] Processing K=10...
+[2025-05-07 21:31:07] K = 10, Huang Cost = 66476.8060219641
+K=1: Cost=302947.9999999984
+K=2: Cost=200397.5126547657
+K=3: Cost=144499.1736882579
+K=4: Cost=111856.6571584246
+K=5: Cost=98594.2439447426
+K=6: Cost=90201.61211915832
+K=7: Cost=82231.18385391243
+K=8: Cost=74867.38920003947
+K=9: Cost=70673.36812059133
+K=10: Cost=66476.8060219641
+
+Percentage difference between consecutive K values:
+From K=1 to K=2: 33.85% decrease
+From K=2 to K=3: 27.89% decrease
+From K=3 to K=4: 22.59% decrease
+From K=4 to K=5: 11.86% decrease
+From K=5 to K=6: 8.51% decrease
+From K=6 to K=7: 8.84% decrease
+From K=7 to K=8: 8.95% decrease
+From K=8 to K=9: 5.60% decrease
+From K=9 to K=10: 5.94% decrease

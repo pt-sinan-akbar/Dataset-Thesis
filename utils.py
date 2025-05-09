@@ -201,7 +201,7 @@ def evaluation_metrics(df, algorithm, cluster_range=None, eps_values=None, min_s
 
     elif algorithm == "Hierarchical":
         for k in cluster_range:
-            hierarchical = AgglomerativeClustering(n_clusters=k, linkage='ward')
+            hierarchical = AgglomerativeClustering(n_clusters=k, metric='euclidean', linkage='ward')
             labels = hierarchical.fit_predict(X_numeric)
 
             results['algorithm'].append('Hierarchical')

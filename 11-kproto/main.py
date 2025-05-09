@@ -1,6 +1,8 @@
 import pandas as pd
 from kmodes.kprototypes import KPrototypes
 import utils
+from logger import Logger
+from benchmark import Benchmark
 
 # Custom for python script
 utils.widen_output(pd)
@@ -9,6 +11,8 @@ df_clean = utils.import_pickle('../05-outlier/rfmd_clean.pkl')
 encoded_to_state = utils.import_pickle('../08-rfmd-final-processing/encoded_to_state.pkl')
 state_mapping = utils.import_pickle('../08-rfmd-final-processing/state_mapping.pkl')
 RFMD_final = utils.import_pickle('../08-rfmd-final-processing/rfmd_final.pkl')
+logger = Logger()
+benchmark = Benchmark(logger)
 # END
 
 # Setelah dapet cluster yg bagus dari atas
@@ -19,27 +23,28 @@ rfmd_kproto = pd.DataFrame(RFMD_final, columns=['recency', 'frequency', 'monetar
 gamma_value = 1.0
 categorical_indices = [3]
 # end
-
+logger.print("Running K-Prototypes")
+benchmark.start_benchmark()
 kproto = KPrototypes(n_clusters=best_k, init='Huang', gamma=gamma_value)
 clusters_kproto = kproto.fit_predict(rfmd_kproto, categorical=categorical_indices)
-
+benchmark.end_benchmark()
 rfmd_kproto['Cluster'] = clusters_kproto
 
-print(rfmd_kproto.head())
+logger.print(rfmd_kproto.head())
 
-print("raw rfmd count:", len(df_clean))
-print("kproto cluster count:", len(kproto.labels_))
+logger.print("raw rfmd count:", len(df_clean))
+logger.print("kproto cluster count:", len(kproto.labels_))
 kproto_rfmd_raw = pd.DataFrame(df_clean, columns=["recency", "frequency", "monetary", "State"])
 kproto_rfmd_raw['Cluster'] = kproto.labels_
-print(kproto_rfmd_raw.head())
+logger.print(kproto_rfmd_raw.head())
 
 # summary
-print("Cluster summary:")
-print(utils.summarize_cluster(rfmd_kproto))
+logger.print("Cluster summary:")
+logger.print(utils.summarize_cluster(rfmd_kproto))
 
-# print("KProto cluster summary (Original Data):")
-print("Cluster summary (Original Data):")
-print(utils.summarize_cluster(kproto_rfmd_raw, False))
+# logger.print("KProto cluster summary (Original Data):")
+logger.print("Cluster summary (Original Data):")
+logger.print(utils.summarize_cluster(kproto_rfmd_raw, False))
 
 # plot 3d clusters
 utils.plot_3d_clusters(kproto_rfmd_raw, "K-Prototypes")
@@ -47,19 +52,19 @@ utils.plot_3d_clusters(kproto_rfmd_raw, "K-Prototypes")
 utils.summarize_cluster_v2(kproto_rfmd_raw)
 
 
-# evaluation metrics
-eval_results = utils.evaluation_metrics(
-    df=rfmd_kproto,
-    algorithm="KPrototypes",
-    cluster_range=range(2, 7),
-)
-print("Evaluation results:")
-print(eval_results)
-
-print("Plot evaluation metrics")
-utils.plot_evaluation_metrics(eval_results)
+# logger.print("evaluation metrics")
+# eval_results = utils.evaluation_metrics(
+#     df=rfmd_kproto,
+#     algorithm="KPrototypes",
+#     cluster_range=range(2, 7),
+# )
+# logger.print("Evaluation results:")
+# logger.print(eval_results)
+# 
+# logger.print("Plot evaluation metrics")
+# utils.plot_evaluation_metrics(eval_results)
 
 
 utils.export_pickle(rfmd_kproto, "rfmd_kproto.pkl")
 utils.export_pickle(kproto_rfmd_raw, "rfmd_kproto_clean.pkl")
-utils.export_pickle(eval_results, "rfm_kproto_eval.pkl")
+# utils.export_pickle(eval_results, "rfm_kproto_eval.pkl")

@@ -35,26 +35,29 @@ def huang_cost_function(X, centroids, clusters, categorical_indices, gamma=1.0):
 
     return cost
 
-def elbow_method_with_huang(data, max_clusters=10, gamma=1.0):
-    costs = []
-    X = data.values
-
-    for k in range(1, max_clusters + 1):
-        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Processing K={k}...")
-        try:
-            kproto = KPrototypes(n_clusters=k, init='Huang', gamma=gamma, random_state=None, verbose=0)
-            clusters = kproto.fit_predict(X, categorical=categorical_indices)
-            centroids = kproto.cluster_centroids_
-
-            cost = huang_cost_function(X, centroids, clusters, categorical_indices, gamma)
-            costs.append(cost)
-            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] K = {k}, Huang Cost = {cost}")
-        except Exception as e:
-            print(f"Error for k={k}: {e}")
-            if costs:
-                costs.append(costs[-1])
-            else:
-                costs.append(float('inf'))
+def elbow_method_with_huang(data, max_clusters=10, gamma=1.0, costs=None):
+    if not costs:
+        costs = []
+        X = data.values
+    
+        for k in range(1, max_clusters + 1):
+            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Processing K={k}...")
+            try:
+                kproto = KPrototypes(n_clusters=k, init='Huang', gamma=gamma, random_state=None, verbose=0)
+                clusters = kproto.fit_predict(X, categorical=categorical_indices)
+                centroids = kproto.cluster_centroids_
+    
+                cost = huang_cost_function(X, centroids, clusters, categorical_indices, gamma)
+                costs.append(cost)
+                print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] K = {k}, Huang Cost = {cost}")
+            except Exception as e:
+                print(f"Error for k={k}: {e}")
+                if costs:
+                    costs.append(costs[-1])
+                else:
+                    costs.append(float('inf'))
+    else:
+        print("Using precomputed costs...")
 
     plt.figure(figsize=(10, 6))
     plt.plot(range(1, max_clusters + 1), costs, marker='o', linestyle='-')
@@ -64,8 +67,8 @@ def elbow_method_with_huang(data, max_clusters=10, gamma=1.0):
     plt.xticks(range(1, max_clusters + 1))
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig('elbow_curve.png')
-    plt.show()
+    # plt.show()
+    plt.savefig('huang_elbow_curve.png')
 
     for i, cost in enumerate(costs):
         print(f"K={i+1}: Cost={cost}")
@@ -93,22 +96,9 @@ if __name__ == "__main__":
 
     if run_huang:
         print("Running Huang Elbow Method...")
-        costs = elbow_method_with_huang(rfmd_kproto, max_clusters=10, gamma=gamma_value)
-        print("Costs for each k:")
+        elbow_method_with_huang(rfmd_kproto, max_clusters=10, gamma=gamma_value)
     else:
         # Karena elbow RFMD dengan huang cost ini memakan waktu lama, dapat digunakan data dari run sebelumnya
-        print("Using precomputed Huang costs...")
-        costs = [302945.9999999998, 200403.4673796627, 144504.98638342315, 111923.87470059782, 98687.1746289738,
-                 90285.75967918534, 82880.50360656573, 74927.28467282065, 70738.93183310021, 66556.70413009671]
-    print(costs)
-
-    plt.figure(figsize=(10, 6))
-    plt.plot(range(1, 11), costs, marker='o', linestyle='-')
-    plt.title('Elbow Method with Huang Cost Function')
-    plt.xlabel('Number of Clusters (k)')
-    plt.ylabel('Huang Cost Function')
-    plt.xticks(range(1, 11))
-    plt.grid(True)
-    plt.tight_layout()
-    # plt.show()
-    plt.savefig('huang_cost_rfmd.png', dpi=300, bbox_inches='tight')
+        costs_precomputed = [302947.9999999984, 200397.5126547657, 144499.1736882579, 111856.6571584246, 98594.2439447426,
+                             90201.61211915832, 82231.18385391243, 74867.38920003947, 70673.36812059133, 66476.8060219641]
+        elbow_method_with_huang(rfmd_kproto, max_clusters=10, gamma=gamma_value, costs=costs_precomputed)

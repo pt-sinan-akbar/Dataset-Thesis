@@ -5,15 +5,19 @@ from sklearn.cluster import DBSCAN
 from sklearn.neighbors import NearestNeighbors
 import matplotlib.pyplot as plt
 import utils
+from logger import Logger
+from benchmark import Benchmark
 
 # Custom for python script
 utils.widen_output(pd)
 RFMD_final = utils.import_pickle('../08-rfmd-final-processing/rfmd_final.pkl')
 df_clean = utils.import_pickle('../05-outlier/rfmd_clean.pkl')
 state_mapping = utils.import_pickle('../08-rfmd-final-processing/state_mapping.pkl')
+logger = Logger()
+benchmark = Benchmark(logger)
 # END
 
-#K-Distance Plot buat nyari nilai optimal eps
+logger.print("K-Distance Plot") # buat nyari nilai optimal eps
 
 # We'll use the same X you plan to feed into DBSCAN
 X = RFMD_final.drop(columns=['Code']).values
@@ -71,7 +75,7 @@ def test_dbscan_eps(RFMD_df, eps_values, min_samples=5):
 
     # Convert to DataFrame
     results_df = pd.DataFrame(results)
-    print(results_df)
+    logger.print(results_df)
 
     # Optional plot
     plt.figure(figsize=(10, 6))
@@ -89,11 +93,12 @@ def test_dbscan_eps(RFMD_df, eps_values, min_samples=5):
 
     return results_df
 
+logger.print("Testing DBSCAN with different eps values")
 #>0.5 IS NOISE (NOT OPTIMAL)
 eps_range = [0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
 result_table = test_dbscan_eps(RFMD_final, eps_range, min_samples=5)
 
-# Evaluation metrics
+logger.print("Evaluation metrics")
 
 def evaluate_dbscan(RFMD_final, eps_values, min_samples=5):
     results = {
@@ -178,22 +183,24 @@ plot_dbscan_evaluation(dbscan_eval_results)
 
 #DBSCAN COBA
 # Berdasarkan Curve diatas 0.35 adalah yang paling bagus
+logger.print("Running DBSCAN with eps=0.35")
 X = RFMD_final.drop(columns=['Code']).values
-
+benchmark.start_benchmark()
 dbscan = DBSCAN(eps=0.35, min_samples=5)
 
 #Fit dan prediksi klusternya
 dbscan_labels = dbscan.fit_predict(X)
+benchmark.end_benchmark()
 
 RFMD_final['DBSCAN_Cluster'] = dbscan_labels
 
 if len(set(dbscan_labels)) > 1:
     silhouette_avg = silhouette_score(X, dbscan_labels)
-    print(f"Silhouette Score : {silhouette_avg}")
+    logger.print(f"Silhouette Score : {silhouette_avg}")
 else:
-    print("DBSCAN Resulted in a single cluster or noise.")
+    logger.print("DBSCAN Resulted in a single cluster or noise.")
 
-print(RFMD_final.head())
+logger.print(RFMD_final.head())
 
 
 #plot
@@ -208,7 +215,7 @@ plt.savefig('dbscan_cluster.png', dpi=300, bbox_inches='tight')
 
 #wow
 filtered_data = RFMD_final[RFMD_final['DBSCAN_Cluster'] != -1]
-print(f"Filtered data shape (excluding noise): {filtered_data.shape}")
+logger.print(f"Filtered data shape (excluding noise): {filtered_data.shape}")
 
 plt.figure(figsize=(10, 6))
 plt.scatter(filtered_data['recency'], filtered_data['frequency'],
@@ -239,6 +246,28 @@ plt.colorbar(label="Cluster")
 # plt.show()
 plt.savefig('dbscan_noise.png', dpi=300, bbox_inches='tight')
 
+def plot_3d(df):
+    x_3d = df[['recency', 'frequency', 'monetary']].values
+    labels = df['DBSCAN_Cluster']
+    # Create 3D scatter plot
+    fig = plt.figure(figsize=(12, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    scatter = ax.scatter(
+        x_3d[:, 0], x_3d[:, 1], x_3d[:, 2],
+        c=labels, cmap='viridis', s=30, alpha=0.7
+    )
+    ax.set_title("3D DBSCAN Clustering (Recency, Frequency, Monetary)")
+    ax.set_xlabel("Recency")
+    ax.set_ylabel("Frequency (log)")
+    ax.set_zlabel("Monetary (log)")
+    # Add legend for clusters
+    legend = ax.legend(*scatter.legend_elements(), title="Clusters", loc="upper right")
+    ax.add_artist(legend)
+    # plt.show()
+    plt.savefig('dbscan_3d.png', dpi=300, bbox_inches='tight')
+
+plot_3d(RFMD_final)
+
 DBSCAN_df = RFMD_final.copy()
 
 # rename the DBSCAN_Cluster to Cluster
@@ -247,13 +276,13 @@ DBSCAN_df.rename(columns={'DBSCAN_Cluster': 'Cluster'}, inplace=True)
 # drop the code column
 DBSCAN_df.drop(columns=['Code'], inplace=True)
 
-print(DBSCAN_df.head())
+logger.print(DBSCAN_df.head())
 
 # use original data (pre pre-processing)
 DBSCAN_df_original = pd.DataFrame(df_clean, columns=["recency", "frequency", "monetary", "State"])
 DBSCAN_df_original['Cluster'] = dbscan_labels
 DBSCAN_df_original['State'] = DBSCAN_df_original['State'].map(state_mapping)
-print(DBSCAN_df_original.head())
+logger.print(DBSCAN_df_original.head())
 
 RFMD_final.rename(columns={'DBSCAN_Cluster': 'Cluster'}, inplace=True)
 RFMD_final.drop(columns=['Code'], inplace=True)
@@ -261,25 +290,25 @@ RFMD_final.drop(columns=['Code'], inplace=True)
 # utils.plot_3d_clusters(RFMD_final, "DBSCAN")
 
 # summary
-print("DBSCAN cluster summary:")
-print(utils.summarize_cluster(RFMD_final, True))
+logger.print("DBSCAN cluster summary:")
+logger.print(utils.summarize_cluster(RFMD_final, True))
 
-print("DBSCAN cluster summary (Original Data):")
-print(utils.summarize_cluster(DBSCAN_df_original))
+logger.print("DBSCAN cluster summary (Original Data):")
+logger.print(utils.summarize_cluster(DBSCAN_df_original))
 
 utils.summarize_cluster_v2(DBSCAN_df_original)
 
-# evaluation metrics
+logger.print("evaluation metrics")
 eval_results = utils.evaluation_metrics(
     df=RFMD_final,
     algorithm="DBSCAN",
     eps_values=eps_range,
     min_samples=5,
 )
-print("Evaluation results:")
-print(eval_results)
+logger.print("Evaluation results:")
+logger.print(eval_results)
 
-print("Plot evaluation metrics")
+logger.print("Plot evaluation metrics")
 utils.plot_evaluation_metrics(eval_results)
 
 utils.export_pickle(RFMD_final, "rfmd_dbscan.pkl")

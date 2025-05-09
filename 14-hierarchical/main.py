@@ -4,6 +4,8 @@ from scipy.cluster.hierarchy import linkage, dendrogram
 import matplotlib.pyplot as plt
 import argparse
 import utils
+from benchmark import Benchmark
+from logger import Logger
 
 
 class Hierarchical(object):
@@ -15,16 +17,18 @@ class Hierarchical(object):
                                      columns=["recency", "frequency", "monetary", "State"])
         self.rfmd_final = utils.import_pickle('../08-rfmd-final-processing/rfmd_final.pkl')
         utils.widen_output(pd)
+        self.logger = Logger()
+        self.benchmark = Benchmark(logger=self.logger)
 
     def run_dendogram(self):
-        print("--- Dendogram ---")
+        self.logger.print("--- Dendogram ---")
 
         # Calculate the linkage matrix
         # 'ward' minimizes the variance within each cluster, requires Euclidean distance
-        print("Calculating linkage")
+        self.logger.print("Calculating linkage")
         linked = linkage(self.rfm_numerical, method='ward', metric='euclidean')
 
-        print("Plotting dendogram")
+        self.logger.print("Plotting dendogram")
         # Plot dendogram
         plt.figure(figsize=(12, 7))
         dendrogram(linked,
@@ -34,42 +38,43 @@ class Hierarchical(object):
         plt.title('Hierarchical Clustering Dendrogram (Ward Linkage)')
         plt.xlabel('Data Points (or Index)')
         plt.ylabel('Euclidean Distance (Ward)')
-        plt.axhline(y=2.5, color='r', linestyle='--', label='Example Cutoff')
+        # plt.axhline(y=2.5, color='r', linestyle='--', label='Example Cutoff')
         plt.legend()
-        plt.suptitle(
-            "Look for the largest vertical distance without crossing horizontal lines to suggest k, or cut at a specific distance.")
+        # plt.suptitle(
+        #     "Look for the largest vertical distance without crossing horizontal lines to suggest k, or cut at a specific distance.")
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
         plt.savefig('dendrogram_hierarchical.png', dpi=300, bbox_inches='tight')
-        print("Dendogram saved to file")
+        self.logger.print("Dendogram saved to file")
 
     def agglomerative(self, chosen_k_hierarchical: int):
-        print(f"--- Agglomerative Clustering with k = {chosen_k_hierarchical} ---")
+        self.logger.print(f"--- Agglomerative Clustering with k = {chosen_k_hierarchical} ---")
 
+        self.benchmark.start_benchmark()
         # Choose k based on dendrogram inspection (e.g., cutting where y=2.5 gives k=3)
         agg_clust = AgglomerativeClustering(n_clusters=chosen_k_hierarchical, metric='euclidean', linkage='ward')
-
         # Fit and get cluster labels
         hierarchical_labels = agg_clust.fit_predict(self.rfm_numerical)
+        self.benchmark.end_benchmark()
 
         # Add labels to your data
         rfm_hierarchical = self.rfm_numerical.copy()
         rfm_hierarchical['Cluster'] = hierarchical_labels
         rfm_hierarchical['State'] = self.rfmd_final['State']
-        print(f"Cluster counts:\n{rfm_hierarchical['Cluster'].value_counts()}")
-        print(rfm_hierarchical.head())
+        self.logger.print(f"Cluster counts:\n{rfm_hierarchical['Cluster'].value_counts()}")
+        self.logger.print(rfm_hierarchical.head())
 
         rfm_hierarchical_clean = self.df_clean.copy()
         rfm_hierarchical_clean['Cluster'] = hierarchical_labels
-        print("Clean data sanity test:")
-        print("raw rfm count:", len(self.df_clean))
-        print("hierarchical count:", len(hierarchical_labels))
-        print(rfm_hierarchical_clean.head())
+        self.logger.print("Clean data sanity test:")
+        self.logger.print("raw rfm count: ", len(self.df_clean))
+        self.logger.print("hierarchical count: ", len(hierarchical_labels))
+        self.logger.print(rfm_hierarchical_clean.head())
 
         self.rfm_hierarchical = rfm_hierarchical
         self.rfm_hierarchical_clean = rfm_hierarchical_clean
 
     def summary(self):
-        print("--- Summary ---")
+        self.logger.print("--- Summary ---")
         if self.rfm_hierarchical is None or self.rfm_hierarchical_clean is None:
             print("No hierarchical clustering data available. trying to load from file")
             try:
@@ -80,11 +85,11 @@ class Hierarchical(object):
                 return
 
         # summary
-        print("Cluster summary:")
-        print(utils.summarize_cluster(self.rfm_hierarchical))
+        self.logger.print("Cluster summary:")
+        self.logger.print(utils.summarize_cluster(self.rfm_hierarchical))
 
-        print("Cluster summary (Original Data):")
-        print(utils.summarize_cluster(self.rfm_hierarchical_clean, False))
+        self.logger.print("Cluster summary (Original Data):")
+        self.logger.print(utils.summarize_cluster(self.rfm_hierarchical_clean, False))
         
         utils.summarize_cluster_v2(self.rfm_hierarchical_clean)
 
@@ -92,10 +97,32 @@ class Hierarchical(object):
         utils.plot_3d_clusters(self.rfm_hierarchical, "Hierarchical")
 
     def export_result(self):
-        print("--- Exporting Result ---")
+        self.logger.print("--- Exporting Result ---")
         utils.export_pickle(self.rfm_hierarchical_clean, 'rfm_hierarchical_clean.pkl')
         utils.export_pickle(self.rfm_hierarchical, 'rfm_hierarchical.pkl')
-        print("Exported to file")
+        self.logger.print("Exported to file")
+
+    def eval_metrics(self):
+        self.logger.print("--- Evaluation Metrics ---")
+        if self.rfm_hierarchical is None or self.rfm_hierarchical_clean is None:
+            print("No hierarchical clustering data available. trying to load from file")
+            try:
+                self.rfm_hierarchical = utils.import_pickle('rfm_hierarchical.pkl')
+                self.rfm_hierarchical_clean = utils.import_pickle('rfm_hierarchical_clean.pkl')
+            except FileNotFoundError:
+                print("No file found, please run agglomerative first")
+                return
+        self.logger.print("evaluation metrics")
+        eval_results = utils.evaluation_metrics(
+            df=self.rfm_hierarchical,
+            algorithm="Hierarchical",
+            cluster_range=range(2, 6)
+        )
+        self.logger.print("Evaluation results:")
+        self.logger.print(eval_results)
+        
+        self.logger.print("Plot evaluation metrics")
+        utils.plot_evaluation_metrics(eval_results)
 
 
 if __name__ == "__main__":
@@ -106,10 +133,12 @@ if __name__ == "__main__":
     parser.add_argument('--chosen_k', type=int)
     parser.add_argument('--run_dendo', default=False)
     parser.add_argument('--summary_only', type=bool, default=False)
+    parser.add_argument('--eval_metrics', type=bool, default=False)
     cl_args = parser.parse_args()
     chosen_k = cl_args.chosen_k
     run_dendo = cl_args.run_dendo
     summary_only = cl_args.summary_only
+    eval_metrics = cl_args.eval_metrics
 
     # gow
     if run_dendo:
@@ -121,5 +150,8 @@ if __name__ == "__main__":
         hierarchical.export_result()
     elif summary_only:
         hierarchical.summary()
+    elif eval_metrics:
+        print("WARNING: this will take 63.3GiB of RAM and few hours")
+        hierarchical.eval_metrics()
     else:
         print("Please define arg --run_dendo=True to run dendogram or --chosen_k={int} to run agglomerative etc or --summary_only=True to just show summary")
