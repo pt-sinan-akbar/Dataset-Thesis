@@ -11,6 +11,7 @@ utils.widen_output(pd)
 RFMD_final = utils.import_pickle('../08-rfmd-final-processing/rfmd_final.pkl')
 RFM_numerical = utils.import_pickle('../08-rfmd-final-processing/rfm_numerical.pkl')
 df_clean = utils.import_pickle('../05-outlier/rfmd_clean.pkl')
+eval_result = utils.import_pickle('rfm_gmm_eval.pkl')
 logger = Logger()
 benchmark = Benchmark(logger)
 # END
@@ -19,7 +20,7 @@ logger.print("Find the optimal number of clusters using the BIC and AIC criteria
 
 gaussian_df = RFM_numerical.copy()
 
-n_components = range(1, 11)
+n_components = range(1, 7)
 model = [GaussianMixture(n_components=i, random_state=42).fit(gaussian_df) for i in n_components]
 
 # AICS (Akaike Information Criterion)
@@ -69,7 +70,7 @@ data_with_clusters['Cluster'] = labels
 # display cluster unique values on cluster with categorical
 logger.print("GMM cluster summary:")
 logger.print(utils.summarize_cluster(gmm_data_with_categorical))
-
+#
 # cluster summary with raw data
 logger.print("GMM cluster summary (Original Data):")
 logger.print(utils.summarize_cluster(gmm_rfm_raw, False))
@@ -82,6 +83,7 @@ eval_results = evaluation_metrics(
     algorithm="GMM",
     cluster_range=range(2, 7)
 )
+
 logger.print("Evaluation results:")
 logger.print(eval_results)
 

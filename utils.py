@@ -1,5 +1,6 @@
 import pandas
 import pandas as pd
+from django.db.models.expressions import result
 from kmodes.kprototypes import KPrototypes
 from matplotlib.colors import ListedColormap
 import matplotlib.pyplot as plt
@@ -189,9 +190,16 @@ def evaluation_metrics(df, algorithm, cluster_range=None, eps_values=None, min_s
             results['calinski_harabasz'].append(ch_score)
 
     elif algorithm == "GMM":
+        # add log likelihood to the results
+        results['log_likelihood'] = []
+
         for k in cluster_range:
             gmm = GaussianMixture(n_components=k, covariance_type='full', random_state=42)
             labels = gmm.fit_predict(X_numeric)
+
+            # Calculate log likelihood
+            log_likelihood = gmm.score(X_numeric) * len(X_numeric)
+            results['log_likelihood'].append(log_likelihood)
 
             results['algorithm'].append('GMM')
             results['params'].append({'n_components': k})
@@ -229,17 +237,21 @@ def evaluation_metrics(df, algorithm, cluster_range=None, eps_values=None, min_s
 
 def plot_evaluation_metrics(results):
     # Determine whether to use 'k' or 'eps' based on the algorithm
-    if 'k' in results['params'][0]:
+    if 'k' in results['params'][0] or 'n_components' in results['params'][0]:
         results['x_param'] = results['params'].apply(lambda x: x.get('k') or x.get('n_components'))
-        x_label = 'Number of Clusters (k)'
+        x_label = 'Number of Clusters (k or n_components)'
     elif 'eps' in results['params'][0]:
         results['x_param'] = results['params'].apply(lambda x: x.get('eps'))
         x_label = 'Epsilon (eps)'
     else:
-        raise ValueError("Unsupported parameter in 'params'. Expected 'k' or 'eps'.")
+        raise ValueError("Unsupported parameter in 'params'. Expected 'k', 'n_components', or 'eps'.")
+
+    # if results have log_likelihood, subplot = 4
+    num_subplots = 4 if 'log_likelihood' in results else 3
+
 
     # Create subplots
-    fig, axs = plt.subplots(3, 1, figsize=(10, 15))
+    fig, axs = plt.subplots(num_subplots, 1, figsize=(10, 15))
 
     # Plot Silhouette Score (higher is better)
     axs[0].plot(results['x_param'], results['silhouette'], marker='o', linestyle='-', color='blue')
@@ -261,6 +273,14 @@ def plot_evaluation_metrics(results):
     axs[2].set_xlabel(x_label)
     axs[2].set_ylabel('Calinski-Harabasz Score')
     axs[2].grid(True)
+
+    # Plot Log Likelihood (higher is better) if available
+    if 'log_likelihood' in results:
+        axs[3].plot(results['x_param'], results['log_likelihood'], marker='o', linestyle='-', color='purple')
+        axs[3].set_title('Log Likelihood (Higher is Better)')
+        axs[3].set_xlabel(x_label)
+        axs[3].set_ylabel('Log Likelihood')
+        axs[3].grid(True)
 
     plt.tight_layout()
     plt.savefig('evaluation_metrics.png', dpi=300, bbox_inches='tight')
