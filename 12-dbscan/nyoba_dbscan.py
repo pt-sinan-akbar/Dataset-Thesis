@@ -1,11 +1,11 @@
-import dist_matrix
 import pandas as pd
 import numpy as np
+from scipy.sparse import lil_matrix
 from sklearn.cluster import DBSCAN
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.decomposition import PCA
-from sklearn.neighbors import NearestNeighbors
+from sklearn.metrics import pairwise_distances
 import utils
 from logger import Logger
 from benchmark import Benchmark
@@ -24,18 +24,6 @@ logger.print("Starting DBSCAN clustering analysis...")
 RFMD_final = RFMD_final.drop(columns=['Code', 'State'])
 
 numeric_df = RFMD_final.select_dtypes(include=['float64', 'int64'])
-import pandas as pd
-import numpy as np
-from sklearn.cluster import DBSCAN
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.decomposition import PCA
-from sklearn.neighbors import NearestNeighbors
-from scipy.spatial.distance import pdist, squareform
-from sklearn.metrics import pairwise_distances
-import utils
-from logger import Logger
-from benchmark import Benchmark
 
 # Initialize logger and benchmark
 logger = Logger()
@@ -72,102 +60,92 @@ logger.print("Available distance metrics for DBSCAN:")
 logger.print("1. Euclidean (default): Standard distance, equal weight to all dimensions")
 logger.print("2. Manhattan: Less sensitive to outliers, sum of absolute differences")
 logger.print("3. Cosine: Measures angle between vectors, captures directional similarity")
-logger.print("4. Weighted Euclidean: Custom weights for RFM dimensions based on domain importance")
-logger.print("5. Mahalanobis: Accounts for correlations between features")
-
-
-# Function to create a custom weighted distance metric
-def weighted_euclidean(weights):
-    def distance(x, y):
-        return np.sqrt(np.sum(weights * ((x - y) ** 2)))
-
-    return distance
-
+logger.print("4. Mahalanobis: Accounts for correlations between features")
 
 # 3. Finding optimal eps for each distance metric
 logger.print("\n3. Finding optimal eps values for different distance metrics")
 logger.print("----------------------------------------------------------")
 
+def compute_pairwise_distances_in_chunks(data, metric, chunk_size=1000, logger=None):
+    n = data.shape[0]
+    distances = lil_matrix((n, n))  # Use a sparse matrix to store distances
+    total_chunks = (n // chunk_size + (1 if n % chunk_size != 0 else 0)) ** 2
+    chunk_counter = 0
 
-def find_optimal_eps(data, metric='euclidean', weights=None, n_neighbors=5, quantile=0.95):
+    if logger:
+        logger.print(f"Starting pairwise distance computation in chunks (total chunks: {total_chunks})")
+
+    for i in range(0, n, chunk_size):
+        for j in range(0, n, chunk_size):
+            if logger:
+                logger.print(f"Processing chunk ({chunk_counter + 1}/{total_chunks}): rows {i}-{min(i + chunk_size, n)}, "
+                             f"columns {j}-{min(j + chunk_size, n)}")
+            chunk_distances = pairwise_distances(
+                data[i:i+chunk_size], data[j:j+chunk_size], metric=metric
+            )
+            distances[i:i+chunk_size, j:j+chunk_size] = chunk_distances
+            chunk_counter += 1
+
+    if logger:
+        logger.print("Pairwise distance computation completed.")
+    return distances.tocsr()  # Convert to CSR format for efficient operations
+
+def find_optimal_eps(data, metric='euclidean', n_neighbors=5, quantile=0.95, chunk_size=1000, logger=None):
     """
-    Find optimal eps value using the k-distance graph
+    Find optimal eps value using the k-distance graph with chunked computation.
 
     Parameters:
     - data: feature matrix
-    - metric: distance metric ('euclidean', 'manhattan', 'cosine', 'precomputed', etc.)
-    - weights: array of weights for weighted metrics
+    - metric: distance metric ('euclidean', 'manhattan', 'cosine', etc.)
     - n_neighbors: number of neighbors to consider
     - quantile: quantile to use for finding elbow point
+    - chunk_size: size of chunks for pairwise distance computation
+    - logger: logger instance for progress tracking
 
     Returns:
     - optimal_eps: suggested eps value
-    - distances: sorted k-distances for plotting
+    - kdistances: sorted k-distances for plotting
     """
-    benchmark.start_benchmark()
+    if logger:
+        logger.print(f"Finding optimal eps using metric: {metric}")
 
-    if metric == 'weighted_euclidean':
-        # For weighted Euclidean, we need to compute distances manually
-        if weights is None:
-            weights = np.ones(data.shape[1])  # Default equal weights
-
-        # Compute pairwise distances
-        distances_matrix = pairwise_distances(data, metric=weighted_euclidean(weights))
-
-        # For each point, find distance to its kth nearest neighbor
-        sorted_distances = np.sort(distances_matrix, axis=1)
-        kdistances = sorted_distances[:, n_neighbors]
-
-    elif metric == 'mahalanobis':
-        # For Mahalanobis distance
-        V = np.cov(data.T)  # Covariance matrix
-        VI = np.linalg.inv(V)  # Inverse covariance
+    if metric == 'mahalanobis':
+        V = np.cov(data.T)
+        VI = np.linalg.inv(V)
 
         def mahalanobis_distance(x, y):
             diff = x - y
             return np.sqrt(np.dot(np.dot(diff, VI), diff.T))
 
-        distances_matrix = pairwise_distances(data, metric=mahalanobis_distance)
+        distances_matrix = compute_pairwise_distances_in_chunks(data, metric=mahalanobis_distance, chunk_size=chunk_size, logger=logger)
+        sorted_distances = np.sort(distances_matrix, axis=1)
+        kdistances = sorted_distances[:, n_neighbors]
+    else:
+        distances_matrix = compute_pairwise_distances_in_chunks(data, metric=metric, chunk_size=chunk_size, logger=logger)
         sorted_distances = np.sort(distances_matrix, axis=1)
         kdistances = sorted_distances[:, n_neighbors]
 
-    else:
-        # For standard metrics
-        nbrs = NearestNeighbors(n_neighbors=n_neighbors + 1, metric=metric).fit(data)
-        distances, _ = nbrs.kneighbors(data)
-        kdistances = distances[:, -1]  # Get the distance to the kth neighbor
-
-    # Sort k-distances in ascending order
     kdistances = np.sort(kdistances)
-
-    # Find the elbow point as a heuristic for optimal eps
-    # Using a percentile approach
     optimal_eps = kdistances[int(len(kdistances) * quantile)]
 
-    benchmark.end_benchmark()
+    if logger:
+        logger.print(f"Optimal eps value found: {optimal_eps:.4f}")
     return optimal_eps, kdistances
 
-
 # List of metrics to try
-metrics = ['euclidean', 'manhattan', 'cosine', 'weighted_euclidean', 'mahalanobis']
+metrics = ['euclidean', 'manhattan', 'cosine', 'mahalanobis']
 
-# Define weights based on domain knowledge
-# Example: If recency is twice as important as frequency and monetary
-# Adjust these weights based on your business context
-rfm_weights = {
-    'equal': np.ones(numeric_df.shape[1]),  # Equal importance
-    'recency_focus': np.array([2.0, 1.0, 1.0]),  # Recency is most important
-    'monetary_focus': np.array([1.0, 1.0, 2.0]),  # Monetary is most important
-    'frequency_focus': np.array([1.0, 2.0, 1.0])  # Frequency is most important
-}
-
-# Find optimal eps for each metric and weighting scheme
+# Find optimal eps for each metric
 eps_results = {}
 logger.print("\nOptimal eps values for different metrics:")
 
-# First, we'll find eps for standard metrics
-for metric in ['euclidean', 'manhattan', 'cosine']:
-    optimal_eps, kdistances = find_optimal_eps(numeric_df.values, metric=metric)
+# Find eps for standard metrics
+for metric in metrics:
+    if metric == 'mahalanobis':
+        optimal_eps, kdistances = find_optimal_eps(numeric_df.values, metric=metric)
+    else:
+        optimal_eps, kdistances = find_optimal_eps(numeric_df.values, metric=metric)
+
     eps_results[metric] = optimal_eps
     logger.print(f"  * {metric}: {optimal_eps:.4f}")
 
@@ -180,42 +158,6 @@ for metric in ['euclidean', 'manhattan', 'cosine']:
     plt.title(f'K-distance graph ({metric} metric)')
     plt.grid(True)
     plt.savefig(f'kdistance_graph_{metric}.png')
-
-# Then weighted Euclidean with different weighting schemes
-for weight_name, weights in rfm_weights.items():
-    if weight_name == 'equal':
-        continue  # Skip equal weights as it's the same as standard Euclidean
-
-    optimal_eps, kdistances = find_optimal_eps(numeric_df.values,
-                                               metric='weighted_euclidean',
-                                               weights=weights)
-    eps_results[f'weighted_euclidean_{weight_name}'] = optimal_eps
-    logger.print(f"  * weighted_euclidean ({weight_name}): {optimal_eps:.4f}")
-
-    # Plot k-distance graph for this weighting scheme
-    plt.figure(figsize=(10, 6))
-    plt.plot(np.arange(len(kdistances)), kdistances, 'b-')
-    plt.axhline(y=optimal_eps, color='r', linestyle='--')
-    plt.xlabel('Points sorted by distance')
-    plt.ylabel(f'Weighted Euclidean distance ({weight_name}) to {5}th nearest neighbor')
-    plt.title(f'K-distance graph (Weighted Euclidean - {weight_name})')
-    plt.grid(True)
-    plt.savefig(f'kdistance_graph_weighted_{weight_name}.png')
-
-# Finally, try Mahalanobis distance
-optimal_eps, kdistances = find_optimal_eps(numeric_df.values, metric='mahalanobis')
-eps_results['mahalanobis'] = optimal_eps
-logger.print(f"  * mahalanobis: {optimal_eps:.4f}")
-
-# Plot k-distance graph for Mahalanobis
-plt.figure(figsize=(10, 6))
-plt.plot(np.arange(len(kdistances)), kdistances, 'b-')
-plt.axhline(y=optimal_eps, color='r', linestyle='--')
-plt.xlabel('Points sorted by distance')
-plt.ylabel(f'Mahalanobis distance to {5}th nearest neighbor')
-plt.title('K-distance graph (Mahalanobis metric)')
-plt.grid(True)
-plt.savefig('kdistance_graph_mahalanobis.png')
 
 # 4. Determine minPts (min_samples) based on domain knowledge
 logger.print("\n4. Determining minPts (min_samples) based on domain knowledge")
@@ -248,27 +190,22 @@ configurations = [
     ('euclidean', eps_results['euclidean'], max(dim_rule, pct_01)),
     ('manhattan', eps_results['manhattan'], max(dim_rule, pct_01)),
     ('cosine', eps_results['cosine'], max(dim_rule, pct_01)),
+    ('mahalanobis', eps_results['mahalanobis'], max(dim_rule, pct_01)),
 
-    # Domain-weighted configurations
-    ('weighted_euclidean_recency_focus', eps_results['weighted_euclidean_recency_focus'], max(dim_rule, pct_01)),
-    ('weighted_euclidean_monetary_focus', eps_results['weighted_euclidean_monetary_focus'], max(dim_rule, pct_01)),
-    ('weighted_euclidean_frequency_focus', eps_results['weighted_euclidean_frequency_focus'], max(dim_rule, pct_01)),
+    # Try different minPts values with Euclidean distance
+    ('euclidean', eps_results['euclidean'], dim_rule),  # Minimum theoretical value
+    ('euclidean', eps_results['euclidean'], pct_1),  # Larger segment size
 
-    # Mahalanobis distance
-    ('mahalanobis', eps_results['mahalanobis'], max(dim_rule, pct_01))
+    # Try different eps values with Euclidean distance
+    ('euclidean', eps_results['euclidean'] * 0.8, max(dim_rule, pct_01)),  # Smaller neighborhoods
+    ('euclidean', eps_results['euclidean'] * 1.2, max(dim_rule, pct_01))  # Larger neighborhoods
 ]
 
 
-# Create helper functions for custom distance metrics for sklearn
-def get_precomputed_distances(data, metric_name, weights=None):
+# Create helper function for Mahalanobis distance
+def get_precomputed_distances(data, metric_name):
     """Generate a precomputed distance matrix for custom metrics"""
-    if metric_name == 'weighted_euclidean_recency_focus':
-        return pairwise_distances(data, metric=weighted_euclidean(rfm_weights['recency_focus']))
-    elif metric_name == 'weighted_euclidean_monetary_focus':
-        return pairwise_distances(data, metric=weighted_euclidean(rfm_weights['monetary_focus']))
-    elif metric_name == 'weighted_euclidean_frequency_focus':
-        return pairwise_distances(data, metric=weighted_euclidean(rfm_weights['frequency_focus']))
-    elif metric_name == 'mahalanobis':
+    if metric_name == 'mahalanobis':
         V = np.cov(data.T)
         VI = np.linalg.inv(V)
 
