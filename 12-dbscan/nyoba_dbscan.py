@@ -66,7 +66,7 @@ logger.print("4. Mahalanobis: Accounts for correlations between features")
 logger.print("\n3. Finding optimal eps values for different distance metrics")
 logger.print("----------------------------------------------------------")
 
-def compute_pairwise_distances_in_chunks(data, metric, chunk_size=1000, logger=None):
+def compute_pairwise_distances_in_chunks(data, metric, chunk_size=1000):
     n = data.shape[0]
     distances = lil_matrix((n, n))  # Use a sparse matrix to store distances
     total_chunks = (n // chunk_size + (1 if n % chunk_size != 0 else 0)) ** 2
@@ -90,7 +90,7 @@ def compute_pairwise_distances_in_chunks(data, metric, chunk_size=1000, logger=N
         logger.print("Pairwise distance computation completed.")
     return distances.tocsr()  # Convert to CSR format for efficient operations
 
-def find_optimal_eps(data, metric='euclidean', n_neighbors=5, quantile=0.95, chunk_size=1000, logger=None):
+def find_optimal_eps(data, metric='euclidean', n_neighbors=5, quantile=0.95, chunk_size=1000):
     """
     Find optimal eps value using the k-distance graph with chunked computation.
 
@@ -117,11 +117,11 @@ def find_optimal_eps(data, metric='euclidean', n_neighbors=5, quantile=0.95, chu
             diff = x - y
             return np.sqrt(np.dot(np.dot(diff, VI), diff.T))
 
-        distances_matrix = compute_pairwise_distances_in_chunks(data, metric=mahalanobis_distance, chunk_size=chunk_size, logger=logger)
+        distances_matrix = compute_pairwise_distances_in_chunks(data, metric=mahalanobis_distance, chunk_size=chunk_size)
         sorted_distances = np.sort(distances_matrix, axis=1)
         kdistances = sorted_distances[:, n_neighbors]
     else:
-        distances_matrix = compute_pairwise_distances_in_chunks(data, metric=metric, chunk_size=chunk_size, logger=logger)
+        distances_matrix = compute_pairwise_distances_in_chunks(data, metric=metric, chunk_size=chunk_size)
         sorted_distances = np.sort(distances_matrix, axis=1)
         kdistances = sorted_distances[:, n_neighbors]
 
