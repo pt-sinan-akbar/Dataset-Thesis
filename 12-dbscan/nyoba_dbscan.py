@@ -133,7 +133,7 @@ def find_optimal_eps(data, metric='euclidean', n_neighbors=5, quantile=0.95, chu
     return optimal_eps, kdistances
 
 # List of metrics to try
-metrics = ['euclidean', 'manhattan', 'cosine', 'mahalanobis']
+metrics = ['euclidean', 'manhattan', 'cosine']
 
 # Find optimal eps for each metric
 eps_results = {}
