@@ -68,7 +68,7 @@ logger.print("----------------------------------------------------------")
 
 def compute_pairwise_distances_in_chunks(data, metric, chunk_size=1000):
     n = data.shape[0]
-    distances = lil_matrix((n, n))  # Use a sparse matrix to store distances
+    distances = np.zeros((n, n))  # Pre-allocate a dense NumPy array
     total_chunks = (n // chunk_size + (1 if n % chunk_size != 0 else 0)) ** 2
     chunk_counter = 0
 
@@ -88,7 +88,7 @@ def compute_pairwise_distances_in_chunks(data, metric, chunk_size=1000):
 
     if logger:
         logger.print("Pairwise distance computation completed.")
-    return distances.tocsr()  # Convert to CSR format for efficient operations
+    return distances
 
 def find_optimal_eps(data, metric='euclidean', n_neighbors=5, quantile=0.95, chunk_size=1000):
     """
