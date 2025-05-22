@@ -141,10 +141,7 @@ logger.print("\nOptimal eps values for different metrics:")
 
 # Find eps for standard metrics
 for metric in metrics:
-    if metric == 'mahalanobis':
-        optimal_eps, kdistances = find_optimal_eps(numeric_df.values, metric=metric)
-    else:
-        optimal_eps, kdistances = find_optimal_eps(numeric_df.values, metric=metric)
+    optimal_eps, kdistances = find_optimal_eps(numeric_df.values, metric=metric)
 
     eps_results[metric] = optimal_eps
     logger.print(f"  * {metric}: {optimal_eps:.4f}")
@@ -190,7 +187,7 @@ configurations = [
     ('euclidean', eps_results['euclidean'], max(dim_rule, pct_01)),
     ('manhattan', eps_results['manhattan'], max(dim_rule, pct_01)),
     ('cosine', eps_results['cosine'], max(dim_rule, pct_01)),
-    ('mahalanobis', eps_results['mahalanobis'], max(dim_rule, pct_01)),
+    # ('mahalanobis', eps_results['mahalanobis'], max(dim_rule, pct_01)),
 
     # Try different minPts values with Euclidean distance
     ('euclidean', eps_results['euclidean'], dim_rule),  # Minimum theoretical value
