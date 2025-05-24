@@ -92,7 +92,7 @@ utils.plot_evaluation_metrics(eval_results)
 
 utils.export_pickle(gmm_data_with_categorical, "rfmd_gmm.pkl")
 utils.export_pickle(gmm_rfm_raw, "rfmd_gmm_clean.pkl")
-utils.export_pickle(eval_results, "rfm_gmm_eval.pkl")
+# utils.export_pickle(eval_results, "rfm_gmm_eval.pkl")
 
 
 

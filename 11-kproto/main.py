@@ -52,19 +52,18 @@ utils.plot_3d_clusters(kproto_rfmd_raw, "K-Prototypes")
 utils.summarize_cluster_v2(kproto_rfmd_raw)
 
 
-# logger.print("evaluation metrics")
-# eval_results = utils.evaluation_metrics(
-#     df=rfmd_kproto,
-#     algorithm="KPrototypes",
-#     cluster_range=range(2, 7),
-# )
-# logger.print("Evaluation results:")
-# logger.print(eval_results)
-# 
-# logger.print("Plot evaluation metrics")
-# utils.plot_evaluation_metrics(eval_results)
+logger.print("evaluation metrics")
+eval_results = utils.evaluation_metrics(
+    df=rfmd_kproto,
+    algorithm="KPrototypes",
+    cluster_range=range(2, 7),
+)
+logger.print("Evaluation results:")
+logger.print(eval_results)
+
+logger.print("Plot evaluation metrics")
+utils.plot_evaluation_metrics(eval_results)
 
 
 utils.export_pickle(rfmd_kproto, "rfmd_kproto.pkl")
 utils.export_pickle(kproto_rfmd_raw, "rfmd_kproto_clean.pkl")
-# utils.export_pickle(eval_results, "rfm_kproto_eval.pkl")

@@ -64,5 +64,13 @@ monetary   12177.0  359.730731  315.441553  9.59  32.38  58.288  86.064
 recency    115.00  219.00  345.00  463.000  516.200   574.000   694.00  
 frequency    2.00    2.00    2.00    3.000    3.000     3.000     3.00  
 monetary   150.06  267.74  459.45  749.324  990.292  1642.782  2132.16  
+
+  algorithm               params  silhouette  davies_bouldin  calinski_harabasz  log_likelihood  x_param
+0       GMM  {'n_components': 2}    0.399951        1.484755       25571.840232  -744601.486127        2
+1       GMM  {'n_components': 3}    0.348783        1.256467       32377.948141  -740269.891151        3
+2       GMM  {'n_components': 4}    0.282166        5.800489       13027.970879  -642246.868167        4
+3       GMM  {'n_components': 5}    0.113364        4.675977       12673.991985  -636508.834869        5
+4       GMM  {'n_components': 6}    0.093951        4.489842       14173.471154  -633462.861545        6
+
 Saving to rfmd_gmm.pkl
 Saving to rfmd_gmm_clean.pkl
