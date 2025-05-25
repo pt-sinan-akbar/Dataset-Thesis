@@ -1,316 +1,230 @@
 import pandas as pd
-import numpy as np
-from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score
 from sklearn.cluster import DBSCAN
-from sklearn.neighbors import NearestNeighbors
 import matplotlib.pyplot as plt
 import utils
 from logger import Logger
 from benchmark import Benchmark
+import plotly.graph_objects as go
+import numpy as np
+from kneed import KneeLocator
+from sklearn.neighbors import NearestNeighbors
+from sklearn.metrics import calinski_harabasz_score, davies_bouldin_score, silhouette_score
 
-# Custom for python script
 utils.widen_output(pd)
 RFMD_final = utils.import_pickle('../08-rfmd-final-processing/rfmd_final.pkl')
 df_clean = utils.import_pickle('../05-outlier/rfmd_clean.pkl')
 state_mapping = utils.import_pickle('../08-rfmd-final-processing/state_mapping.pkl')
 logger = Logger()
 benchmark = Benchmark(logger)
-# END
 
-logger.print("K-Distance Plot") # buat nyari nilai optimal eps
+logger.print("DBSCAN Hyperparameter Optimization for RFM Data")
+logger.print("=" * 50)
 
-# We'll use the same X you plan to feed into DBSCAN
-X = RFMD_final.drop(columns=['Code']).values
-
-# Set k = min_samples (usually 4 or 5)
-k = 5
-neigh = NearestNeighbors(n_neighbors=k)
-nbrs = neigh.fit(X)
-
-distances, indices = nbrs.kneighbors(X)
-k_distances = distances[:, k-1]
-
-# Sort distances for plotting
-k_distances = np.sort(k_distances)
-
-# Plot
-plt.figure(figsize=(10, 6))
-plt.plot(k_distances)
-plt.title(f'k-distance Graph (k={k})')
-plt.xlabel('Data Points sorted by distance')
-plt.ylabel(f'Distance to {k}th Nearest Neighbor')
-plt.grid(True)
-# plt.show()
-plt.savefig('k_distance_graph.png', dpi=300, bbox_inches='tight')
-
-#test
-def test_dbscan_eps(RFMD_df, eps_values, min_samples=5):
-    results = []
-
-    # Remove categorical columns for DBSCAN
-    X = RFMD_df.drop(columns=['Code']).values
-
-    for eps in eps_values:
-        dbscan = DBSCAN(eps=eps, min_samples=min_samples)
-        labels = dbscan.fit_predict(X)
-
-        # Count unique clusters (excluding noise)
-        unique_clusters = set(labels)
-        num_clusters = len(unique_clusters - {-1})
-        noise_ratio = (labels == -1).sum() / len(labels)
-
-        if num_clusters > 1:
-            filtered_X = X[labels != -1]
-            filtered_labels = labels[labels != -1]
-            silhouette = silhouette_score(filtered_X, filtered_labels)
-        else:
-            silhouette = None  # not valid if only 1 cluster
-
-        results.append({
-            'eps': eps,
-            'Clusters': num_clusters,
-            'Noise Ratio': round(noise_ratio, 3),
-            'Silhouette Score': round(silhouette, 4) if silhouette is not None else "N/A"
-        })
-
-    # Convert to DataFrame
-    results_df = pd.DataFrame(results)
-    logger.print(results_df)
-
-    # Optional plot
-    plt.figure(figsize=(10, 6))
-    plt.plot(results_df['eps'],
-             [s if s != "N/A" else 0 for s in results_df['Silhouette Score']],
-             marker='o', label='Silhouette Score')
-    plt.plot(results_df['eps'], results_df['Noise Ratio'], marker='x', label='Noise Ratio')
-    plt.title("DBSCAN Evaluation across Eps values")
-    plt.xlabel("Eps Value")
-    plt.ylabel("Score / Ratio")
-    plt.legend()
-    plt.grid(True)
-    # plt.show()
-    plt.savefig('dbscan_eps_eval.png', dpi=300, bbox_inches='tight')
-
-    return results_df
-
-logger.print("Testing DBSCAN with different eps values")
-#>0.5 IS NOISE (NOT OPTIMAL)
-eps_range = [0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
-result_table = test_dbscan_eps(RFMD_final, eps_range, min_samples=5)
-
-logger.print("Evaluation metrics")
-
-def evaluate_dbscan(RFMD_final, eps_values, min_samples=5):
-    results = {
-        'eps': [],
-        'num_clusters': [],
-        'noise_ratio': [],
-        'silhouette': [],
-        'davies_bouldin': [],
-        'calinski_harabasz': []
-    }
-
-    # X_numeric = RFMD_final.drop(columns=['Code']).select_dtypes(include=[np.number]).values
-    X_numeric = pd.DataFrame(RFMD_final, columns=['recency', 'frequency', 'monetary'])
-
-    for eps in eps_values:
-        dbscan = DBSCAN(eps=eps, min_samples=min_samples)
-        labels = dbscan.fit_predict(X_numeric)
-
-        num_clusters = len(set(labels)) - (1 if -1 in labels else 0)
-        noise_ratio = np.mean(labels == -1)
-
-        results['eps'].append(eps)
-        results['num_clusters'].append(num_clusters)
-        results['noise_ratio'].append(round(noise_ratio, 3))
-
-        if num_clusters > 1:
-            core_mask = labels != -1
-            silhouette = silhouette_score(X_numeric[core_mask], labels[core_mask])
-            db_score = davies_bouldin_score(X_numeric[core_mask], labels[core_mask])
-            ch_score = calinski_harabasz_score(X_numeric[core_mask], labels[core_mask])
-        else:
-            silhouette = np.nan
-            db_score = np.nan
-            ch_score = np.nan
-
-        results['silhouette'].append(round(silhouette, 4) if silhouette is not np.nan else np.nan)
-        results['davies_bouldin'].append(round(db_score, 4) if db_score is not np.nan else np.nan)
-        results['calinski_harabasz'].append(round(ch_score, 4) if ch_score is not np.nan else np.nan)
-
-    return pd.DataFrame(results)
-
-def plot_dbscan_evaluation(results_df):
-    fig, axs = plt.subplots(5, 1, figsize=(12, 25))
-
-    axs[0].plot(results_df['eps'], results_df['num_clusters'], marker='o')
-    axs[0].set_title('Number of Clusters vs Eps')
-    axs[0].set_xlabel('Eps')
-    axs[0].set_ylabel('Number of Clusters')
-    axs[0].grid(True)
-
-    axs[1].plot(results_df['eps'], results_df['noise_ratio'], marker='x', color='purple')
-    axs[1].set_title('Noise Ratio vs Eps')
-    axs[1].set_xlabel('Eps')
-    axs[1].set_ylabel('Noise Ratio')
-    axs[1].grid(True)
-
-    axs[2].plot(results_df['eps'], [v if not np.isnan(v) else 0 for v in results_df['silhouette']], marker='o', color='blue')
-    axs[2].set_title('Silhouette Score (Higher is Better)')
-    axs[2].set_xlabel('Eps')
-    axs[2].set_ylabel('Silhouette Score')
-    axs[2].grid(True)
-
-    axs[3].plot(results_df['eps'], [v if not np.isnan(v) else 0 for v in results_df['davies_bouldin']], marker='o', color='red')
-    axs[3].set_title('Davies-Bouldin Score (Lower is Better)')
-    axs[3].set_xlabel('Eps')
-    axs[3].set_ylabel('Davies-Bouldin')
-    axs[3].grid(True)
-
-    axs[4].plot(results_df['eps'], [v if not np.isnan(v) else 0 for v in results_df['calinski_harabasz']], marker='o', color='green')
-    axs[4].set_title('Calinski-Harabasz Score (Higher is Better)')
-    axs[4].set_xlabel('Eps')
-    axs[4].set_ylabel('Calinski-Harabasz')
-    axs[4].grid(True)
-
-    plt.tight_layout()
-    # plt.show()
-    plt.savefig('evaluation_metrics.png', dpi=300, bbox_inches='tight')
-
-eps_range = [0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6]
-dbscan_eval_results = evaluate_dbscan(RFMD_final, eps_range)
-plot_dbscan_evaluation(dbscan_eval_results)
-
-#DBSCAN COBA
-# Berdasarkan Curve diatas 0.35 adalah yang paling bagus
-logger.print("Running DBSCAN with eps=0.35")
-X = RFMD_final.drop(columns=['Code']).values
-benchmark.start_benchmark()
-dbscan = DBSCAN(eps=0.35, min_samples=5)
-
-#Fit dan prediksi klusternya
-dbscan_labels = dbscan.fit_predict(X)
-benchmark.end_benchmark()
-
-RFMD_final['DBSCAN_Cluster'] = dbscan_labels
-
-if len(set(dbscan_labels)) > 1:
-    silhouette_avg = silhouette_score(X, dbscan_labels)
-    logger.print(f"Silhouette Score : {silhouette_avg}")
-else:
-    logger.print("DBSCAN Resulted in a single cluster or noise.")
-
-logger.print(RFMD_final.head())
+# Prepare data
+RFMD_final = RFMD_final.drop(columns=['Code', 'State'])
+numeric_df = RFMD_final.select_dtypes(include=['float64', 'int64'])
+logger.print(f"Dataset shape: {numeric_df.shape}")
 
 
-#plot
-plt.figure(figsize=(10, 6))
-plt.scatter(X[:, 0], X[:, 1], c=dbscan_labels, cmap='viridis', s=50, alpha=0.7)
-plt.title("DBSCAN Clustering")
-plt.xlabel("Recency")
-plt.ylabel("Frequency")
-plt.colorbar(label="Cluster")
-# plt.show()
-plt.savefig('dbscan_cluster.png', dpi=300, bbox_inches='tight')
+def find_optimal_eps(data, metric='euclidean', k=5, plot_path=None):
+    # Compute k-distances
+    neighbors = NearestNeighbors(n_neighbors=k + 1, metric=metric, n_jobs=-1)  # k+1 because we exclude self
+    neighbors.fit(data)
+    distances, _ = neighbors.kneighbors(data)
+    kdistances = np.sort(distances[:, k])  # Take the k-th distance (0-indexed, so k gives us k+1-th neighbor)
 
-#wow
-filtered_data = RFMD_final[RFMD_final['DBSCAN_Cluster'] != -1]
-logger.print(f"Filtered data shape (excluding noise): {filtered_data.shape}")
-
-plt.figure(figsize=(10, 6))
-plt.scatter(filtered_data['recency'], filtered_data['frequency'],
-            c=filtered_data['DBSCAN_Cluster'], cmap='viridis', s=50, alpha=0.7)
-
-# Add labels and title
-plt.title("Filtered Data (DBSCAN Clustering)")
-plt.xlabel("Recency")
-plt.ylabel("Frequency")
-plt.colorbar(label="Cluster")
-# plt.show()
-plt.savefig('dbscan_filtered_data.png', dpi=300, bbox_inches='tight')
-
-noise = RFMD_final[RFMD_final['DBSCAN_Cluster'] == -1]
-clusters = RFMD_final[RFMD_final['DBSCAN_Cluster'] != -1]
-
-plt.figure(figsize=(10, 6))
-plt.scatter(clusters['recency'], clusters['frequency'],
-            c=clusters['DBSCAN_Cluster'], cmap='viridis', s=50, alpha=0.7, label='Clusters')
-plt.scatter(noise['recency'], noise['frequency'],
-            c='red', s=30, alpha=0.5, label='Noise')
-
-plt.title("DBSCAN Clustering (With Noise in Red)")
-plt.xlabel("Recency")
-plt.ylabel("Frequency")
-plt.legend()
-plt.colorbar(label="Cluster")
-# plt.show()
-plt.savefig('dbscan_noise.png', dpi=300, bbox_inches='tight')
-
-def plot_3d(df):
-    x_3d = df[['recency', 'frequency', 'monetary']].values
-    labels = df['DBSCAN_Cluster']
-    # Create 3D scatter plot
-    fig = plt.figure(figsize=(12, 8))
-    ax = fig.add_subplot(111, projection='3d')
-    scatter = ax.scatter(
-        x_3d[:, 0], x_3d[:, 1], x_3d[:, 2],
-        c=labels, cmap='viridis', s=30, alpha=0.7
+    # KneeLocator on the whole data
+    x = range(len(kdistances))
+    knee_locator = KneeLocator(
+        x,
+        kdistances,
+        curve='convex',
+        direction='increasing',
+        S=3,
     )
-    ax.set_title("3D DBSCAN Clustering (Recency, Frequency, Monetary)")
-    ax.set_xlabel("Recency")
-    ax.set_ylabel("Frequency (log)")
-    ax.set_zlabel("Monetary (log)")
-    # Add legend for clusters
-    legend = ax.legend(*scatter.legend_elements(), title="Clusters", loc="upper right")
-    ax.add_artist(legend)
-    # plt.show()
-    plt.savefig('dbscan_3d.png', dpi=300, bbox_inches='tight')
+    knee_x = knee_locator.elbow
 
-plot_3d(RFMD_final)
+    # Add null check and handle potential None
+    if knee_x is not None:
+        optimal_eps = kdistances[knee_x]
+        logger.print(f"  k={k}: Optimal eps found at index {knee_x}: {optimal_eps:.4f}")
+    else:
+        optimal_eps = None
+        logger.print(f"  k={k}: No elbow found in the k-distance curve")
 
-DBSCAN_df = RFMD_final.copy()
+    # Plotting (optional)
+    if plot_path:
+        fig = go.Figure()
 
-# rename the DBSCAN_Cluster to Cluster
-DBSCAN_df.rename(columns={'DBSCAN_Cluster': 'Cluster'}, inplace=True)
+        # Full curve
+        fig.add_trace(go.Scatter(
+            x=list(x),
+            y=kdistances,
+            mode='lines',
+            name='K-distance Curve',
+            line=dict(color='blue', width=2),
+            hovertemplate='Point: %{x}<br>Distance: %{y:.4f}<extra></extra>'
+        ))
 
-# drop the code column
-DBSCAN_df.drop(columns=['Code'], inplace=True)
+        # Knee point
+        if knee_x is not None:
+            fig.add_trace(go.Scatter(
+                x=[knee_x],
+                y=[optimal_eps],
+                mode='markers+text',
+                name='Elbow Point',
+                marker=dict(color='red', size=12),
+                text=[f'Elbow ({knee_x}, {optimal_eps:.4f})'],
+                textposition='top center',
+                hovertemplate='Elbow Point<br>Index: %{x}<br>Eps: %{y:.4f}<extra></extra>'
+            ))
 
-logger.print(DBSCAN_df.head())
+        fig.update_layout(
+            title=f"K-distance Graph - {metric.title()} (k={k})",
+            xaxis_title="Points sorted by distance",
+            yaxis_title=f"{metric.title()} distance to {k}th nearest neighbor",
+            hovermode='closest',
+            template='plotly_white'
+        )
+        fig.write_html(plot_path)
 
-# use original data (pre pre-processing)
-DBSCAN_df_original = pd.DataFrame(df_clean, columns=["recency", "frequency", "monetary", "State"])
-DBSCAN_df_original['Cluster'] = dbscan_labels
-DBSCAN_df_original['State'] = DBSCAN_df_original['State'].map(state_mapping)
-logger.print(DBSCAN_df_original.head())
+    return optimal_eps, kdistances
 
-RFMD_final.rename(columns={'DBSCAN_Cluster': 'Cluster'}, inplace=True)
-RFMD_final.drop(columns=['Code'], inplace=True)
 
-# utils.plot_3d_clusters(RFMD_final, "DBSCAN")
+# 2. Compute eps values for different metrics and k values
+metrics = ['euclidean', 'manhattan']
+k_range = range(6, 100)  # k values from 6 to 100
 
-# summary
-logger.print("DBSCAN cluster summary:")
-logger.print(utils.summarize_cluster(RFMD_final, True))
+logger.print("\nFinding optimal eps values for different k values:")
 
-logger.print("DBSCAN cluster summary (Original Data):")
-logger.print(utils.summarize_cluster(DBSCAN_df_original))
+# 3. Create parameter combinations
+configurations = []
+best_config = None
+best_score = float('inf')
+results = []
 
-utils.summarize_cluster_v2(DBSCAN_df_original)
+for metric in metrics:
+    logger.print(f"\nProcessing metric: {metric}")
 
-logger.print("evaluation metrics")
-eval_results = utils.evaluation_metrics(
-    df=RFMD_final,
-    algorithm="DBSCAN",
-    eps_values=eps_range,
-    min_samples=5,
-)
-logger.print("Evaluation results:")
-logger.print(eval_results)
+    for k in k_range:
+        # Find optimal eps for this specific k
+        eps, kdistances = find_optimal_eps(
+            numeric_df.values,
+            metric=metric,
+            k=k,
+            plot_path=f'kdistance_graph_{metric}_k{k}.html'
+        )
 
-logger.print("Plot evaluation metrics")
-utils.plot_evaluation_metrics(eval_results)
+        # Skip if no eps found
+        if eps is None:
+            logger.print(f"  Skipping k={k} due to no optimal eps found")
+            continue
 
-utils.export_pickle(RFMD_final, "rfmd_dbscan.pkl")
-utils.export_pickle(DBSCAN_df_original, "rfmd_dbscan_clean.pkl")
-utils.export_pickle(eval_results, "rfm_dbscan_eval.pkl")
+        # Use this k as min_samples and the corresponding eps
+        logger.print(f"  Testing: {metric} eps={eps:.6f} min_samples={k}")
+
+        try:
+            db = DBSCAN(eps=eps, min_samples=k, metric=metric, n_jobs=-1)
+            labels = db.fit_predict(numeric_df.values)
+
+            n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+            n_noise = list(labels).count(-1)
+            noise_ratio = n_noise / len(labels)
+
+            # Calculate clustering metrics (only if we have valid clusters)
+            calinski_score = np.nan
+            davies_bouldin = np.nan
+            silhouette_avg = np.nan
+            composite_score = np.inf
+
+            if n_clusters >= 2:
+                # Filter out noise points for metric calculation
+                non_noise_mask = labels != -1
+                if np.sum(non_noise_mask) > 0:
+                    data_clean = numeric_df.values[non_noise_mask]
+                    labels_clean = labels[non_noise_mask]
+
+                    # Only calculate if we have more than 1 cluster after removing noise
+                    if len(set(labels_clean)) >= 2:
+                        try:
+                            calinski_score = calinski_harabasz_score(data_clean, labels_clean)
+                            davies_bouldin = davies_bouldin_score(data_clean, labels_clean)
+                            silhouette_avg = silhouette_score(data_clean, labels_clean)
+
+                            # Composite score (lower is better)
+                            # Normalize scores: Calinski (higher=better), Davies-Bouldin (lower=better), Silhouette (higher=better)
+                            composite_score = (
+                                    (1 / (calinski_score + 1e-8)) +  # Invert Calinski (higher is better)
+                                    davies_bouldin +  # Davies-Bouldin (lower is better)
+                                    (1 / (silhouette_avg + 1e-8)) +  # Invert Silhouette (higher is better)
+                                    (noise_ratio * 2)  # Penalize noise
+                            )
+                        except Exception as metric_error:
+                            logger.print(f"    → Metric calculation error: {str(metric_error)}")
+
+            result = {
+                'metric': metric,
+                'eps': eps,
+                'min_samples': k,
+                'n_clusters': n_clusters,
+                'noise_ratio': noise_ratio,
+                'n_noise': n_noise,
+                'calinski_score': calinski_score,
+                'davies_bouldin': davies_bouldin,
+                'silhouette_score': silhouette_avg,
+                'composite_score': composite_score,
+                'labels': labels
+            }
+            results.append(result)
+
+            logger.print(f"    → clusters={n_clusters:3d} noise={noise_ratio:5.1%} "
+                         f"CH={calinski_score:.2f} DB={davies_bouldin:.3f} Sil={silhouette_avg:.3f}")
+
+            # Evaluate this configuration using composite score
+            if 2 <= n_clusters <= 25 and not np.isinf(composite_score):
+                if composite_score < best_score:
+                    best_score = composite_score
+                    best_config = result.copy()
+                    logger.print(f"    → NEW BEST! Composite Score: {composite_score:.4f}")
+
+        except Exception as e:
+            logger.print(f"    → ERROR: {str(e)}")
+
+# 4. Show best result
+logger.print("\n" + "=" * 50)
+logger.print("OPTIMAL HYPERPARAMETERS")
+logger.print("=" * 50)
+
+if best_config:
+    logger.print(f"✅ Best Configuration Found:")
+    logger.print(f"   Metric: {best_config['metric']}")
+    logger.print(f"   eps: {best_config['eps']:.6f}")
+    logger.print(f"   min_samples: {best_config['min_samples']}")
+    logger.print(f"   Composite Score: {best_score:.6f}")
+    logger.print(f"   ")
+    logger.print(f"   Clustering Results:")
+    logger.print(f"   - Number of clusters: {best_config['n_clusters']}")
+    logger.print(f"   - Noise ratio: {best_config['noise_ratio']:.4f}")
+    logger.print(f"   - Number of noise points: {best_config['n_noise']}")
+    logger.print(f"   ")
+    logger.print(f"   Quality Metrics:")
+    logger.print(f"   - Calinski-Harabasz Score: {best_config['calinski_score']:.4f}")
+    logger.print(f"   - Davies-Bouldin Score: {best_config['davies_bouldin']:.4f}")
+    logger.print(f"   - Silhouette Score: {best_config['silhouette_score']:.4f}")
+else:
+    logger.print("❌ No valid configuration found.")
+    logger.print("Please check the logs for more details.")
+
+# 5. Optional: Show top 10 configurations
+logger.print("\n" + "=" * 50)
+logger.print("TOP 10 CONFIGURATIONS")
+logger.print("=" * 50)
+
+valid_results = [r for r in results if 2 <= r['n_clusters'] <= 25]
+valid_results.sort(key=lambda x: x['noise_ratio'] + (0.1 if x['n_clusters'] < 4 or x['n_clusters'] > 15 else 0))
+
+for i, result in enumerate(valid_results[:10]):
+    score = result['noise_ratio'] + (0.1 if result['n_clusters'] < 4 or result['n_clusters'] > 15 else 0)
+    logger.print(f"{i + 1:2d}. {result['metric']:9s} eps={result['eps']:8.4f} "
+                 f"min_samples={result['min_samples']:3d} clusters={result['n_clusters']:3d} "
+                 f"noise={result['noise_ratio']:5.1%} score={score:.4f}")
