@@ -235,7 +235,7 @@ def evaluation_metrics(df, algorithm, cluster_range=None, eps_values=None, min_s
     return pd.DataFrame(results)
 
 
-def plot_evaluation_metrics(results):
+def plot_evaluation_metrics(results, metrics=None):
     # Determine whether to use 'k' or 'eps' based on the algorithm
     if 'k' in results['params'][0] or 'n_components' in results['params'][0]:
         results['x_param'] = results['params'].apply(lambda x: x.get('k') or x.get('n_components'))
@@ -283,4 +283,13 @@ def plot_evaluation_metrics(results):
         axs[3].grid(True)
 
     plt.tight_layout()
-    plt.savefig('evaluation_metrics.png', dpi=300, bbox_inches='tight')
+    if metrics is not None:
+        plt.savefig(f'evaluation_metrics_{metrics}.png', dpi=300, bbox_inches='tight')
+    else:
+        plt.savefig('evaluation_metrics.png', dpi=300, bbox_inches='tight')
+
+def eval_metrics_single(df, labels, logger):
+    logger.print("Evaluation metrics using clustering from this code")
+    logger.print("Silhouette Score: ", silhouette_score(df, labels))
+    logger.print("Davies-Bouldin Index: ", davies_bouldin_score(df, labels))
+    logger.print("Calinski-Harabasz Index: ", calinski_harabasz_score(df, labels))

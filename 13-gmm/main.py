@@ -20,7 +20,7 @@ logger.print("Find the optimal number of clusters using the BIC and AIC criteria
 
 gaussian_df = RFM_numerical.copy()
 
-n_components = range(1, 7)
+n_components = range(1, 101)
 model = [GaussianMixture(n_components=i, random_state=42).fit(gaussian_df) for i in n_components]
 
 # AICS (Akaike Information Criterion)
@@ -28,6 +28,9 @@ aics = [m.aic(gaussian_df) for m in model]
 
 # BICS (Bayesian Information Criterion)
 bics = [m.bic(gaussian_df) for m in model]
+
+logger.print("AICs: " + str(aics))
+logger.print("BICs: " + str(bics))
 
 logger.print("Plot AIC and BIC")
 
@@ -92,7 +95,7 @@ utils.plot_evaluation_metrics(eval_results)
 
 utils.export_pickle(gmm_data_with_categorical, "rfmd_gmm.pkl")
 utils.export_pickle(gmm_rfm_raw, "rfmd_gmm_clean.pkl")
-# utils.export_pickle(eval_results, "rfm_gmm_eval.pkl")
+utils.export_pickle(eval_results, "rfm_gmm_eval.pkl")
 
 
 
