@@ -50,3 +50,21 @@ plt.legend()
 plt.tight_layout()
 # plt.show()
 plt.savefig('elbow_both.png', dpi=300, bbox_inches='tight')
+
+plt.cla()
+
+plt.figure(figsize=(10, 6))
+
+plt.plot(cluster_range, inertias, marker='o', linestyle='-', color='b')
+# plt.plot(cluster_range, wcss, marker='s', linestyle='--', color='r', label='RFMD')
+
+plt.title('Elbow Method for K-Means')
+plt.xlabel('Number of Clusters (k)')
+plt.ylabel('WCSS')
+plt.xticks(cluster_range)
+plt.grid(True)
+plt.legend()
+
+plt.tight_layout()
+# plt.show()
+plt.savefig('elbow_kmeans.png', dpi=300, bbox_inches='tight')

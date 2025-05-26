@@ -313,4 +313,4 @@ utils.plot_evaluation_metrics(eval_results)
 
 utils.export_pickle(RFMD_final, "rfmd_dbscan.pkl")
 utils.export_pickle(DBSCAN_df_original, "rfmd_dbscan_clean.pkl")
-utils.export_pickle(eval_results, "rfm_dbscan_eval.pkl")
+# utils.export_pickle(eval_results, "rfm_dbscan_eval.pkl")

@@ -107,5 +107,13 @@ monetary   25994.0   55.302358  19.561487  9.59  19.39  25.7365  30.09  38.71
 recency    159.00  230.00  277.00  296.00  349.0  469.00  
 frequency    1.00    1.00    1.00    1.00    1.0    3.00  
 monetary    54.36   70.47   83.63   88.28   92.5   93.68  
+
+     algorithm    params  silhouette  davies_bouldin  calinski_harabasz  k
+0  KPrototypes  {'k': 2}    0.215282        2.280927       14584.957349  2
+1  KPrototypes  {'k': 3}    0.286578        1.129065       48559.181367  3
+2  KPrototypes  {'k': 4}    0.381091        0.836548       70061.135144  4
+3  KPrototypes  {'k': 5}    0.351880        0.900792       63914.764294  5
+4  KPrototypes  {'k': 6}    0.338000        1.003300       60297.498867  6
+  
 Saving to rfmd_kproto.pkl
 Saving to rfmd_kproto_clean.pkl

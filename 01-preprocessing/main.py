@@ -57,7 +57,7 @@ null = orders_dataset.isnull().sum()[orders_dataset.isnull().sum() > 0]
 print(np.array(
     [null.index, null.values, [orders_dataset.shape[0]] * len(null), null.values / orders_dataset.shape[0] * 100]).T)
 # check the data
-display(orders_dataset[orders_dataset.isnull().any(axis=1)].head())
+print(orders_dataset[orders_dataset.isnull().any(axis=1)].head())
 # check order status of missing values
 print(orders_dataset[orders_dataset.isnull().any(axis=1)]['order_status'].value_counts())
 

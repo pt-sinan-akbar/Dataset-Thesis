@@ -57,6 +57,7 @@ logger.print("KNN Cluster summary (Original Data):")
 logger.print(summarize_cluster(kmeans_rfm_raw, False))
 
 utils.summarize_cluster_v2(kmeans_rfm_raw)
+plot_3d_clusters(kmeans_rfm_raw, "K-Means(RAW)")
 
 logger.print("evaluation metrics")
 eval_results = utils.evaluation_metrics(
