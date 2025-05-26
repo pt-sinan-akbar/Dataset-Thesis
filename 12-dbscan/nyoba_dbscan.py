@@ -1,343 +1,301 @@
 import pandas as pd
-import numpy as np
-from scipy.sparse import lil_matrix
 from sklearn.cluster import DBSCAN
 import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.decomposition import PCA
-from sklearn.metrics import pairwise_distances
 import utils
 from logger import Logger
 from benchmark import Benchmark
+import plotly.graph_objects as go
+import numpy as np
+from kneed import KneeLocator
+from sklearn.neighbors import NearestNeighbors
+from sklearn.metrics import calinski_harabasz_score, davies_bouldin_score, silhouette_score
 
 utils.widen_output(pd)
 RFMD_final = utils.import_pickle('../08-rfmd-final-processing/rfmd_final.pkl')
 df_clean = utils.import_pickle('../05-outlier/rfmd_clean.pkl')
 state_mapping = utils.import_pickle('../08-rfmd-final-processing/state_mapping.pkl')
+# manhattan_df = utils.import_pickle('dbscan_manhattan_results.pkl')
+# euclidean_df = utils.import_pickle('dbscan_euclidean_results.pkl')
+
 logger = Logger()
 benchmark = Benchmark(logger)
 
-# Use the already loaded data from your code
-logger.print("Starting DBSCAN clustering analysis...")
+logger.print("DBSCAN Hyperparameter Optimization for RFM Data")
+logger.print("=" * 50)
 
-# drop code and state columns
+# Prepare data
 RFMD_final = RFMD_final.drop(columns=['Code', 'State'])
-
 numeric_df = RFMD_final.select_dtypes(include=['float64', 'int64'])
+logger.print(f"Dataset shape: {numeric_df.shape}")
 
-# Initialize logger and benchmark
-logger = Logger()
-benchmark = Benchmark(logger)
+def find_optimal_eps(data, metric='euclidean', k=5, plot_path=None):
+    # Compute k-distances
+    neighbors = NearestNeighbors(n_neighbors=k + 1, metric=metric, n_jobs=-1)  # k+1 because we exclude self
+    neighbors.fit(data)
+    distances, _ = neighbors.kneighbors(data)
+    kdistances = np.sort(distances[:, k])  # Take the k-th distance (0-indexed, so k gives us k+1-th neighbor)
 
-logger.print("Starting domain knowledge-informed DBSCAN clustering analysis...")
+    # KneeLocator on the whole data
+    x = range(len(kdistances))
+    knee_locator = KneeLocator(
+        x,
+        kdistances,
+        curve='convex',
+        direction='increasing',
+        S=3,
+    )
+    knee_x = knee_locator.elbow
 
-# Assume numeric_df is already loaded and pre-processed
-# If working with a new dataset:
-# numeric_df = RFMD_final.drop(columns=['State', 'Code'])  # Assuming these are non-numeric columns
-
-# 1. Exploratory Analysis for Domain Knowledge Application
-logger.print("\n1. Exploring RFM data distributions for domain knowledge application")
-logger.print("-----------------------------------------------------------------")
-
-# Basic statistics
-logger.print("\nBasic statistics of RFM features:")
-stats = numeric_df.describe()
-logger.print(stats)
-
-# Visualize distributions
-plt.figure(figsize=(15, 5))
-for i, col in enumerate(numeric_df.columns):
-    plt.subplot(1, 3, i + 1)
-    sns.histplot(numeric_df[col], kde=True)
-    plt.title(f'Distribution of {col}')
-plt.tight_layout()
-plt.savefig('rfm_distributions.png')
-
-# 2. Distance Metrics Selection
-logger.print("\n2. Distance Metrics Selection")
-logger.print("----------------------------")
-logger.print("Available distance metrics for DBSCAN:")
-logger.print("1. Euclidean (default): Standard distance, equal weight to all dimensions")
-logger.print("2. Manhattan: Less sensitive to outliers, sum of absolute differences")
-logger.print("3. Cosine: Measures angle between vectors, captures directional similarity")
-logger.print("4. Mahalanobis: Accounts for correlations between features")
-
-# 3. Finding optimal eps for each distance metric
-logger.print("\n3. Finding optimal eps values for different distance metrics")
-logger.print("----------------------------------------------------------")
-
-def compute_pairwise_distances_in_chunks(data, metric, chunk_size=1000):
-    n = data.shape[0]
-    distances = np.zeros((n, n))  # Pre-allocate a dense NumPy array
-    total_chunks = (n // chunk_size + (1 if n % chunk_size != 0 else 0)) ** 2
-    chunk_counter = 0
-
-    if logger:
-        logger.print(f"Starting pairwise distance computation in chunks (total chunks: {total_chunks})")
-
-    for i in range(0, n, chunk_size):
-        for j in range(0, n, chunk_size):
-            if logger:
-                logger.print(f"Processing chunk ({chunk_counter + 1}/{total_chunks}): rows {i}-{min(i + chunk_size, n)}, "
-                             f"columns {j}-{min(j + chunk_size, n)}")
-            chunk_distances = pairwise_distances(
-                data[i:i+chunk_size], data[j:j+chunk_size], metric=metric
-            )
-            distances[i:i+chunk_size, j:j+chunk_size] = chunk_distances
-            chunk_counter += 1
-
-    if logger:
-        logger.print("Pairwise distance computation completed.")
-    return distances
-
-def find_optimal_eps(data, metric='euclidean', n_neighbors=5, quantile=0.95, chunk_size=1000):
-    """
-    Find optimal eps value using the k-distance graph with chunked computation.
-
-    Parameters:
-    - data: feature matrix
-    - metric: distance metric ('euclidean', 'manhattan', 'cosine', etc.)
-    - n_neighbors: number of neighbors to consider
-    - quantile: quantile to use for finding elbow point
-    - chunk_size: size of chunks for pairwise distance computation
-    - logger: logger instance for progress tracking
-
-    Returns:
-    - optimal_eps: suggested eps value
-    - kdistances: sorted k-distances for plotting
-    """
-    if logger:
-        logger.print(f"Finding optimal eps using metric: {metric}")
-
-    if metric == 'mahalanobis':
-        V = np.cov(data.T)
-        VI = np.linalg.inv(V)
-
-        def mahalanobis_distance(x, y):
-            diff = x - y
-            return np.sqrt(np.dot(np.dot(diff, VI), diff.T))
-
-        distances_matrix = compute_pairwise_distances_in_chunks(data, metric=mahalanobis_distance, chunk_size=chunk_size)
-        sorted_distances = np.sort(distances_matrix, axis=1)
-        kdistances = sorted_distances[:, n_neighbors]
+    # Add null check and handle potential None
+    if knee_x is not None:
+        optimal_eps = kdistances[knee_x]
+        logger.print(f"  k={k}: Optimal eps found at index {knee_x}: {optimal_eps:.4f}")
     else:
-        distances_matrix = compute_pairwise_distances_in_chunks(data, metric=metric, chunk_size=chunk_size)
-        sorted_distances = np.sort(distances_matrix, axis=1)
-        kdistances = sorted_distances[:, n_neighbors]
+        optimal_eps = None
+        logger.print(f"  k={k}: No elbow found in the k-distance curve")
 
-    kdistances = np.sort(kdistances)
-    optimal_eps = kdistances[int(len(kdistances) * quantile)]
+    # Plotting (optional)
+    if plot_path:
+        fig = go.Figure()
 
-    if logger:
-        logger.print(f"Optimal eps value found: {optimal_eps:.4f}")
+        # Full curve
+        fig.add_trace(go.Scatter(
+            x=list(x),
+            y=kdistances,
+            mode='lines',
+            name='K-distance Curve',
+            line=dict(color='blue', width=2),
+            hovertemplate='Point: %{x}<br>Distance: %{y:.4f}<extra></extra>'
+        ))
+
+        # Knee point
+        if knee_x is not None:
+            fig.add_trace(go.Scatter(
+                x=[knee_x],
+                y=[optimal_eps],
+                mode='markers+text',
+                name='Elbow Point',
+                marker=dict(color='red', size=12),
+                text=[f'Elbow ({knee_x}, {optimal_eps:.4f})'],
+                textposition='top center',
+                hovertemplate='Elbow Point<br>Index: %{x}<br>Eps: %{y:.4f}<extra></extra>'
+            ))
+
+        fig.update_layout(
+            title=f"K-distance Graph - {metric.title()} (k={k})",
+            xaxis_title="Points sorted by distance",
+            yaxis_title=f"{metric.title()} distance to {k}th nearest neighbor",
+            hovermode='closest',
+            template='plotly_white'
+        )
+        fig.write_html(plot_path)
+
     return optimal_eps, kdistances
 
-# List of metrics to try
-metrics = ['euclidean', 'manhattan', 'cosine']
 
-# Find optimal eps for each metric
-eps_results = {}
-logger.print("\nOptimal eps values for different metrics:")
+# 2. Compute eps values for different metrics and k values
+metrics = ['euclidean', 'manhattan']
+k_range = range(6, 101)  # k values from 6 to 100
 
-# Find eps for standard metrics
-for metric in metrics:
-    optimal_eps, kdistances = find_optimal_eps(numeric_df.values, metric=metric)
+logger.print("\nFinding optimal eps values for different k values:")
 
-    eps_results[metric] = optimal_eps
-    logger.print(f"  * {metric}: {optimal_eps:.4f}")
-
-    # Plot k-distance graph
-    plt.figure(figsize=(10, 6))
-    plt.plot(np.arange(len(kdistances)), kdistances, 'b-')
-    plt.axhline(y=optimal_eps, color='r', linestyle='--')
-    plt.xlabel('Points sorted by distance')
-    plt.ylabel(f'{metric} distance to {5}th nearest neighbor')
-    plt.title(f'K-distance graph ({metric} metric)')
-    plt.grid(True)
-    plt.savefig(f'kdistance_graph_{metric}.png')
-
-# 4. Determine minPts (min_samples) based on domain knowledge
-logger.print("\n4. Determining minPts (min_samples) based on domain knowledge")
-logger.print("-----------------------------------------------------------")
-logger.print("Considerations for setting minPts:")
-logger.print("  * Dataset size (total points):", len(numeric_df))
-logger.print("  * Rule of thumb: minPts ≥ dim + 1:", numeric_df.shape[1] + 1)
-logger.print("  * For dense regions, consider higher minPts (better clusters)")
-logger.print("  * For sparse regions, consider lower minPts (more sensitivity)")
-logger.print("  * Minimum meaningful business segment size")
-
-# Suggest some values based on dataset characteristics
-pct_1 = int(len(numeric_df) * 0.001)  # 0.1% of data points
-pct_01 = int(len(numeric_df) * 0.0001)  # 0.01% of data points
-dim_rule = numeric_df.shape[1] + 1  # dimensionality + 1
-
-logger.print("\nSuggested minPts values based on dataset characteristics:")
-logger.print(f"  * Minimum (dims + 1): {dim_rule}")
-logger.print(f"  * 0.01% of dataset: {pct_01}")
-logger.print(f"  * 0.1% of dataset: {pct_1}")
-logger.print(f"  * Conservative default: {max(dim_rule, pct_01)}")
-
-# 5. Run DBSCAN with different combinations
-logger.print("\n5. Running DBSCAN with different configurations based on domain knowledge")
-logger.print("-----------------------------------------------------------------------")
-
-# Combinations to try
-configurations = [
-    # Standard metrics with their optimal eps values
-    ('euclidean', eps_results['euclidean'], max(dim_rule, pct_01)),
-    ('manhattan', eps_results['manhattan'], max(dim_rule, pct_01)),
-    ('cosine', eps_results['cosine'], max(dim_rule, pct_01)),
-    # ('mahalanobis', eps_results['mahalanobis'], max(dim_rule, pct_01)),
-
-    # Try different minPts values with Euclidean distance
-    ('euclidean', eps_results['euclidean'], dim_rule),  # Minimum theoretical value
-    ('euclidean', eps_results['euclidean'], pct_1),  # Larger segment size
-
-    # Try different eps values with Euclidean distance
-    ('euclidean', eps_results['euclidean'] * 0.8, max(dim_rule, pct_01)),  # Smaller neighborhoods
-    ('euclidean', eps_results['euclidean'] * 1.2, max(dim_rule, pct_01))  # Larger neighborhoods
-]
-
-
-# Create helper function for Mahalanobis distance
-def get_precomputed_distances(data, metric_name):
-    """Generate a precomputed distance matrix for custom metrics"""
-    if metric_name == 'mahalanobis':
-        V = np.cov(data.T)
-        VI = np.linalg.inv(V)
-
-        def mahalanobis_distance(x, y):
-            diff = x - y
-            return np.sqrt(np.dot(np.dot(diff, VI), diff.T))
-
-        return pairwise_distances(data, metric=mahalanobis_distance)
-    else:
-        return None
-
-
-# Run DBSCAN with different configurations
+# 3. Create parameter combinations
+configurations = []
+best_config = None
+best_score = float('inf')
 results = []
-for metric_name, eps, min_samples in configurations:
-    logger.print(f"\nRunning DBSCAN with {metric_name}, eps={eps:.4f}, min_samples={min_samples}")
-    benchmark.start_benchmark()
 
-    # For standard metrics, we can use them directly
-    if metric_name in ['euclidean', 'manhattan', 'cosine']:
-        db = DBSCAN(eps=eps, min_samples=min_samples, metric=metric_name, n_jobs=-1).fit(numeric_df.values)
+for metric in metrics:
+    logger.print(f"\nProcessing metric: {metric}")
 
-    # For custom metrics, we need to precompute the distance matrix
-    else:
-        dist_matrix = get_precomputed_distances(numeric_df.values, metric_name)
-        db = DBSCAN(eps=eps, min_samples=min_samples, metric='precomputed', n_jobs=-1).fit(dist_matrix)
+    for k in k_range:
+        # Find optimal eps for this specific k
+        eps, kdistances = find_optimal_eps(
+            numeric_df.values,
+            metric=metric,
+            k=k,
+            plot_path=f'kdistance_graph_{metric}_k{k}.html'
+        )
 
-    benchmark.end_benchmark()
+        # Skip if no eps found
+        if eps is None:
+            logger.print(f"  Skipping k={k} due to no optimal eps found")
+            continue
 
-    # Analyze results
-    labels = db.labels_
-    n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
-    n_noise = list(labels).count(-1)
-    noise_ratio = n_noise / len(labels)
+        # Use this k as min_samples and the corresponding eps
+        logger.print(" " + "=" * 50)
+        logger.print(f"  Testing: {metric} eps={eps:.6f} min_samples={k}")
 
-    logger.print(f"  * Number of clusters: {n_clusters}")
-    logger.print(f"  * Number of noise points: {n_noise} ({noise_ratio:.2%} of data)")
+        try:
+            db = DBSCAN(eps=eps, min_samples=k, metric=metric, n_jobs=-1)
+            labels = db.fit_predict(numeric_df.values)
 
-    # Record the results
-    results.append({
-        'metric': metric_name,
-        'eps': eps,
-        'min_samples': min_samples,
-        'n_clusters': n_clusters,
-        'n_noise': n_noise,
-        'noise_ratio': noise_ratio,
-        'labels': labels
-    })
+            n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+            n_noise = list(labels).count(-1)
+            noise_ratio = n_noise / len(labels)
 
-    # If we have a good clustering result (multiple clusters, reasonable noise),
-    # analyze the clusters in more detail
-    if n_clusters >= 2 and noise_ratio < 0.1:
-        # Add cluster labels to original dataframe
-        temp_df = numeric_df.copy()
-        temp_df['Cluster'] = labels
+            # Calculate clustering metrics (only if we have valid clusters)
+            calinski_score = np.nan
+            davies_bouldin = np.nan
+            silhouette_avg = np.nan
+            composite_score = np.inf
 
-        # Analyze cluster characteristics
-        logger.print("\nCluster Characteristics (Mean Values):")
-        cluster_summary = temp_df.groupby('Cluster').mean()
-        logger.print(cluster_summary)
+            if n_clusters >= 2:
+                # Filter out noise points for metric calculation
+                non_noise_mask = labels != -1
+                if np.sum(non_noise_mask) > 0:
+                    data_clean = numeric_df.values[non_noise_mask]
+                    labels_clean = labels[non_noise_mask]
 
-        # Cluster sizes
-        cluster_sizes = pd.Series(labels).value_counts().sort_index()
-        logger.print("\nCluster Sizes:")
-        for cluster_id, size in cluster_sizes.items():
-            if cluster_id == -1:
-                logger.print(f"Noise points: {size} samples ({size / len(labels):.2%})")
-            else:
-                logger.print(f"Cluster {cluster_id}: {size} samples ({size / len(labels):.2%})")
+                    # Only calculate if we have more than 1 cluster after removing noise
+                    if len(set(labels_clean)) >= 2:
+                        try:
+                            calinski_score = calinski_harabasz_score(data_clean, labels_clean)
+                            davies_bouldin = davies_bouldin_score(data_clean, labels_clean)
+                            silhouette_avg = silhouette_score(data_clean, labels_clean)
 
-        # Visualize the clusters (using PCA for dimensionality reduction)
-        pca = PCA(n_components=2)
-        pca_result = pca.fit_transform(numeric_df.values)
+                            # Composite score (lower is better)
+                            # Normalize scores: Calinski (higher=better), Davies-Bouldin (lower=better), Silhouette (higher=better)
+                            composite_score = (
+                                    (1 / (calinski_score + 1e-8)) +  # Invert Calinski (higher is better)
+                                    davies_bouldin +  # Davies-Bouldin (lower is better)
+                                    (1 / (silhouette_avg + 1e-8)) +  # Invert Silhouette (higher is better)
+                                    (noise_ratio * 2)  # Penalize noise
+                            )
+                        except Exception as metric_error:
+                            logger.print(f"    → Metric calculation error: {str(metric_error)}")
 
-        plt.figure(figsize=(10, 8))
-        scatter = plt.scatter(pca_result[:, 0], pca_result[:, 1], c=labels, cmap='viridis', alpha=0.7)
-        plt.colorbar(scatter, label='Cluster')
-        plt.title(f'DBSCAN Clusters ({metric_name}, eps={eps:.4f}, min_samples={min_samples})')
-        plt.xlabel('PCA Component 1')
-        plt.ylabel('PCA Component 2')
-        plt.savefig(f'dbscan_clusters_{metric_name}.png')
+            result = {
+                'metric': metric,
+                'eps': eps,
+                'min_samples': k,
+                'n_clusters': n_clusters,
+                'noise_ratio': noise_ratio,
+                'n_noise': n_noise,
+                'calinski_score': calinski_score,
+                'davies_bouldin': davies_bouldin,
+                'silhouette_score': silhouette_avg,
+                'composite_score': composite_score,
+                'labels': labels
+            }
+            results.append(result)
 
-# 6. Compare and recommend the best configuration
-logger.print("\n6. Comparing DBSCAN configurations and making recommendations")
-logger.print("----------------------------------------------------------")
+            logger.print(f"    → clusters={n_clusters:3d} noise={noise_ratio:5.1%} "
+                         f"CH={calinski_score:.2f} DB={davies_bouldin:.3f} Sil={silhouette_avg:.3f}")
 
-# Convert results to DataFrame for easier comparison
-results_df = pd.DataFrame([
-    {
-        'Metric': r['metric'],
-        'Epsilon': r['eps'],
-        'Min_Samples': r['min_samples'],
-        'Num_Clusters': r['n_clusters'],
-        'Noise_Points': r['n_noise'],
-        'Noise_Percentage': r['noise_ratio'] * 100
-    } for r in results
-])
+            # Evaluate this configuration using composite score
+            if 2 <= n_clusters <= 25 and not np.isinf(composite_score):
+                if composite_score < best_score:
+                    best_score = composite_score
+                    best_config = result.copy()
+                    logger.print(f"    → NEW BEST! Composite Score: {composite_score:.4f}")
 
-logger.print("\nComparison of DBSCAN configurations:")
-logger.print(results_df)
+        except Exception as e:
+            logger.print(f"    → ERROR: {str(e)}")
 
-# Find the best configuration (subjective - could be different based on business needs)
-# Here, we define "best" as having multiple clusters and low noise
-valid_results = results_df[results_df['Num_Clusters'] >= 2]
-if not valid_results.empty:
-    # Sort by noise percentage (ascending)
-    valid_results = valid_results.sort_values('Noise_Percentage')
-    best_config = valid_results.iloc[0]
+# 4. Show best result
+logger.print("\n" + "=" * 50)
+logger.print("OPTIMAL HYPERPARAMETERS")
+logger.print("=" * 50)
 
-    logger.print("\nRecommended configuration based on cluster quality:")
-    logger.print(f"  * Metric: {best_config['Metric']}")
-    logger.print(f"  * Epsilon: {best_config['Epsilon']:.4f}")
-    logger.print(f"  * Min_Samples: {int(best_config['Min_Samples'])}")
-    logger.print(f"  * Number of clusters: {int(best_config['Num_Clusters'])}")
-    logger.print(f"  * Noise percentage: {best_config['Noise_Percentage']:.2f}%")
-
-    # Use the best configuration for final clustering
-    best_idx = results_df[
-        (results_df['Metric'] == best_config['Metric']) &
-        (results_df['Epsilon'] == best_config['Epsilon']) &
-        (results_df['Min_Samples'] == best_config['Min_Samples'])
-        ].index[0]
-
-    best_labels = results[best_idx]['labels']
-
-    # Create final output with cluster labels
-    final_df = numeric_df.copy()
-    final_df['Cluster'] = best_labels
-
-    # Save the clustered data
-    utils.export_pickle(final_df, 'rfm_clustered.pkl')
-
-    logger.print("\nFinal clustering saved to 'rfm_clustered.pkl'")
+if best_config:
+    logger.print(f"✅ Best Configuration Found:")
+    logger.print(f"   Metric: {best_config['metric']}")
+    logger.print(f"   eps: {best_config['eps']:.6f}")
+    logger.print(f"   min_samples: {best_config['min_samples']}")
+    logger.print(f"   Composite Score: {best_score:.6f}")
+    logger.print(f"   ")
+    logger.print(f"   Clustering Results:")
+    logger.print(f"   - Number of clusters: {best_config['n_clusters']}")
+    logger.print(f"   - Noise ratio: {best_config['noise_ratio']:.4f}")
+    logger.print(f"   - Number of noise points: {best_config['n_noise']}")
+    logger.print(f"   ")
+    logger.print(f"   Quality Metrics:")
+    logger.print(f"   - Calinski-Harabasz Score: {best_config['calinski_score']:.4f}")
+    logger.print(f"   - Davies-Bouldin Score: {best_config['davies_bouldin']:.4f}")
+    logger.print(f"   - Silhouette Score: {best_config['silhouette_score']:.4f}")
 else:
-    logger.print("\nNo configuration produced multiple clusters with acceptable noise levels.")
-    logger.print("Consider adjusting the parameter ranges or distance metrics.")
+    logger.print("❌ No valid configuration found.")
+    logger.print("Please check the logs for more details.")
 
-logger.print("\nDBSCAN clustering analysis with domain knowledge completed.")
+# 5. Optional: Show top 10 configurations
+logger.print("\n" + "=" * 50)
+logger.print("TOP 10 CONFIGURATIONS")
+logger.print("=" * 50)
+
+valid_results = [r for r in results if 2 <= r['n_clusters'] <= 25]
+valid_results.sort(key=lambda x: x['noise_ratio'] + (0.1 if x['n_clusters'] < 4 or x['n_clusters'] > 15 else 0))
+
+for i, result in enumerate(valid_results[:10]):
+    score = result['noise_ratio'] + (0.1 if result['n_clusters'] < 4 or result['n_clusters'] > 15 else 0)
+    logger.print(f"{i + 1:2d}. {result['metric']:9s} eps={result['eps']:8.4f} "
+                 f"min_samples={result['min_samples']:3d} clusters={result['n_clusters']:3d} "
+                 f"noise={result['noise_ratio']:5.1%} score={score:.4f}")
+
+# 6. Plot evaluation metrics - Option 1: Adapt for existing function
+
+def convert_results_for_plotting(results):
+    """Convert DBSCAN results to format expected by plot_evaluation_metrics function"""
+    if results is None or len(results) == 0:
+        logger.print("No results to plot")
+        return None, None
+
+    # Create DataFrame from results
+    df = pd.DataFrame(results)
+
+    # Create params column with 'k' key (using min_samples as k for x-axis)
+    df['params'] = df.apply(lambda row: {
+        'k': row['min_samples'],  # This will be used as x-axis
+        'eps': row['eps'],
+        'min_samples': row['min_samples'],
+        'metric': row['metric']
+    }, axis=1)
+
+    # Rename columns to match expected names in plot function
+    column_mapping = {
+        'silhouette_score': 'silhouette',
+        'davies_bouldin': 'davies_bouldin',
+        'calinski_score': 'calinski_harabasz'
+    }
+    df.rename(columns=column_mapping, inplace=True)
+
+    # Filter out rows with NaN values in key metrics
+    df = df.dropna(subset=['silhouette', 'davies_bouldin', 'calinski_harabasz'])
+
+    # Normalize metric column values
+    df['metric'] = df['metric'].str.lower()
+
+    # Split by metric
+    manhattan_df = df[df['metric'] == 'manhattan'].reset_index(drop=True)
+    euclidean_df = df[df['metric'] == 'euclidean'].reset_index(drop=True)
+
+    return manhattan_df, euclidean_df
+
+# Convert results for plotting
+manhattan_df, euclidean_df = convert_results_for_plotting(results)
+
+logger.print("\nConverted results for plotting:")
+
+if euclidean_df is not None and not euclidean_df.empty:
+    logger.print(f"  Euclidean DataFrame Head:\n{euclidean_df.head()}")
+else:
+    logger.print("  Euclidean DataFrame is empty or None.")
+
+if manhattan_df is not None and not manhattan_df.empty:
+    logger.print(f"  Manhattan DataFrame Head:\n{manhattan_df.head()}")
+else:
+    logger.print("  Manhattan DataFrame is empty or None.")
+
+# utils.export_pickle(manhattan_df, 'dbscan_manhattan_results.pkl')
+# utils.export_pickle(euclidean_df, 'dbscan_euclidean_results.pkl')
+
+# Plot Euclidean results
+logger.print("\nPlotting Euclidean results")
+utils.plot_evaluation_metrics(euclidean_df, 'euclidean_dbscan')
+#
+# # Plot Manhattan results
+logger.print("\nPlotting Manhattan results")
+utils.plot_evaluation_metrics(manhattan_df, 'manhattan_dbscan')
+
+# Save best configuration
+# utils.export_pickle(results, 'dbscan_results.pkl')
