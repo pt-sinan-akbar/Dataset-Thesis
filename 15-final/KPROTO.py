@@ -3,7 +3,7 @@ from mother import Mother
 
 class KProto(Mother):
     def __init__(self):
-        super().__init__(name="K-Prototype", polling_interval=1)
+        super().__init__(name="K-Prototype", polling_interval=1, is_rfmd=True)
     
     def _run_clustering(self):
         # using RFMD, need to be customized here

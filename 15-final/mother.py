@@ -10,7 +10,7 @@ class Mother(object):
     It is designed to be inherited by specific clustering algorithm classes.
     """
     
-    def __init__(self, name, polling_interval=0.1):
+    def __init__(self, name, polling_interval=0.1, is_rfmd=False):
         """
         Initialize the Mother class.
         This method sets up the necessary imports and configurations for clustering.
@@ -24,6 +24,7 @@ class Mother(object):
         self.benchmark = Benchmark(logger=self.logger, polling_interval=polling_interval)
         self.name = name
         self.shortname = name.replace('-', '').lower()
+        self.is_rfmd = is_rfmd
 
     def _run_clustering(self):
         """
@@ -31,6 +32,12 @@ class Mother(object):
         This method should be overridden by subclasses to implement specific clustering algorithms.
         """
         raise NotImplementedError("Subclasses should implement this method.")
+    
+    def _run_eval_metrics(self, labels):
+        """
+        Seems unnecessary, but DBSCAN need to override this to prevent noise point to be evaluated
+        """
+        utils.eval_metrics_single(self.RFM_numerical, labels, self.logger)
     
     def run(self):
         algo_df = self.RFM_numerical.copy()
@@ -62,16 +69,16 @@ class Mother(object):
         self.logger.print(f"{self.name} cluster summary:")
         self.logger.print(utils.summarize_cluster(algo_df))
         utils.plot_3d_clusters(algo_df, f"{self.name}")
-        utils.plot_pca(algo_df, labels)
+        utils.plot_pca(data=algo_df, labels=labels, scale=False, title=self.name, is_rfmd=self.is_rfmd)
         
         # original data summary
         self.logger.print(f"{self.name} cluster summary (Original Data):")
         utils.summarize_cluster_v2(algo_df_raw)
         utils.plot_3d_clusters(algo_df_raw, f"{self.name} (Clean)")
-        utils.plot_pca(algo_df_raw, labels)
+        utils.plot_pca(data=algo_df_raw, labels=labels, title=self.name + "_raw", is_rfmd=self.is_rfmd)
         
         # evaluation metrics
-        utils.eval_metrics_single(self.RFM_numerical, labels, self.logger)
+        self._run_eval_metrics(labels)
         
         # export results
         utils.export_pickle(algo_df, f"{self.shortname}_result.pkl")

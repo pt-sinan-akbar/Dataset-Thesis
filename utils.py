@@ -295,8 +295,10 @@ def eval_metrics_single(df, labels, logger):
     logger.print("Davies-Bouldin Index: ", davies_bouldin_score(df, labels))
     logger.print("Calinski-Harabasz Index: ", calinski_harabasz_score(df, labels))
 
-def plot_pca(data, labels, scale=True, title='PCA of Clustered Data'):
+def plot_pca(data, labels, title, is_rfmd, scale=True):
     required_columns = ['recency', 'frequency', 'monetary']
+    if is_rfmd:
+        required_columns.append('State')
     if not all(col in data.columns for col in required_columns):
         raise ValueError(f"DataFrame must contain the following columns: {required_columns}")
     data = data[required_columns]
@@ -326,10 +328,10 @@ def plot_pca(data, labels, scale=True, title='PCA of Clustered Data'):
     # Plot
     plt.figure(figsize=(10, 6))
     sns.scatterplot(data=pca_df, x='PC1', y='PC2', hue='Cluster', palette='tab10', s=80, alpha=0.8)
-    plt.title(title)
+    plt.title(f'PCA of Clustered Data {title}')
     plt.xlabel('Principal Component 1')
     plt.ylabel('Principal Component 2')
     plt.legend(title='Cluster')
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(title.replace(' ', '_').lower() + '.png', dpi=300, bbox_inches='tight')
+    plt.savefig(title.replace('-', '').lower() + '_PCA.png', dpi=300, bbox_inches='tight')
