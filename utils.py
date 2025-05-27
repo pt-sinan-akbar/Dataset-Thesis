@@ -1,15 +1,16 @@
 import pandas
-import pandas as pd
-from django.db.models.expressions import result
 from kmodes.kprototypes import KPrototypes
 from matplotlib.colors import ListedColormap
-import matplotlib.pyplot as plt
 import pickle
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 import numpy as np
 from sklearn.cluster import DBSCAN, KMeans, AgglomerativeClustering
-
+from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score
 from sklearn.mixture import GaussianMixture
+from sklearn.preprocessing import StandardScaler
 
 with open('../08-rfmd-final-processing/encoded_to_state.pkl', 'rb') as file:
     encoded_to_state = pickle.load(file)
@@ -293,3 +294,37 @@ def eval_metrics_single(df, labels, logger):
     logger.print("Silhouette Score: ", silhouette_score(df, labels))
     logger.print("Davies-Bouldin Index: ", davies_bouldin_score(df, labels))
     logger.print("Calinski-Harabasz Index: ", calinski_harabasz_score(df, labels))
+
+def plot_pca(data, labels, scale=True, title='PCA of Clustered Data'):
+    # Convert to DataFrame if not already
+    if not isinstance(data, pd.DataFrame):
+        data = pd.DataFrame(data)
+
+    # Scale the data
+    if scale:
+        scaler = StandardScaler()
+        data_scaled = scaler.fit_transform(data)
+    else:
+        data_scaled = data
+
+    # PCA to reduce to 2 components
+    pca = PCA(n_components=2)
+    components = pca.fit_transform(data_scaled)
+
+    # Create a DataFrame for visualization
+    pca_df = pd.DataFrame(data={
+        'PC1': components[:, 0],
+        'PC2': components[:, 1],
+        'Cluster': labels
+    })
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(data=pca_df, x='PC1', y='PC2', hue='Cluster', palette='tab10', s=80, alpha=0.8)
+    plt.title(title)
+    plt.xlabel('Principal Component 1')
+    plt.ylabel('Principal Component 2')
+    plt.legend(title='Cluster')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
