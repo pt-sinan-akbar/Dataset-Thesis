@@ -1,0 +1,109 @@
+Importing ../08-rfmd-final-processing/rfm_categorical.pkl
+Importing ../08-rfmd-final-processing/rfm_numerical.pkl
+Importing ../05-outlier/rfmd_clean.pkl
+Logger started at 2025-05-27 18:57:39
+[2025-05-27 18:57:40] - run - Running GMM clustering
+[2025-05-27 18:57:40] - start_benchmark - Starting benchmark...
+[2025-05-27 18:57:40] - start_benchmark - Benchmarker initial state captured for PID 13325.
+[2025-05-27 18:57:42] - end_benchmark - 
+--- Algorithm Benchmark Results ---
+[2025-05-27 18:57:42] - end_benchmark -   Wall Time (s): 1.9078
+[2025-05-27 18:57:42] - end_benchmark -   CPU Time (s): 2.6221
+[2025-05-27 18:57:42] - end_benchmark -   Average CPU Utilization (%): 137.44
+[2025-05-27 18:57:42] - end_benchmark -   Peak CPU Utilization (%, polled): 283.20
+[2025-05-27 18:57:42] - end_benchmark -   Peak Python Memory (MiB - tracemalloc): 15.2089
+[2025-05-27 18:57:42] - end_benchmark -   Process Memory Start (MiB - psutil RSS): 174.2344
+[2025-05-27 18:57:42] - end_benchmark -   Process Memory End (MiB - psutil RSS): 190.7539
+[2025-05-27 18:57:42] - end_benchmark -   Process Memory Diff (MiB - psutil RSS): 16.5195
+[2025-05-27 18:57:42] - end_benchmark -   Peak Process Memory (MiB - psutil RSS, polled): 190.8086
+[2025-05-27 18:57:42] - end_benchmark -   Average Process Memory (MiB - psutil RSS, polled): 186.3077
+[2025-05-27 18:57:42] - end_benchmark - --- Benchmark Ended ---
+[2025-05-27 18:57:42] - run - GMM clustering completed with 3 clusters consisting of 91393 data points.
+[2025-05-27 18:57:42] - run - GMM clustering data sample:
+[2025-05-27 18:57:42] - run -     recency  frequency  monetary  State  Cluster
+0 -0.825508   -0.39207  0.316722      4        1
+1 -0.805830   -0.39207 -1.923088      4        1
+2  1.962187   -0.39207 -0.285795      3        0
+3  0.545382   -0.39207 -1.210315      1        0
+4  0.328926   -0.39207  0.681231      4        0
+[2025-05-27 18:57:42] - run - GMM clustering original data sample:
+[2025-05-27 18:57:42] - run -    recency  frequency  monetary      State  Cluster
+0      111          1    141.90  Southeast        1
+1      114          1     27.19  Southeast        1
+2      536          1     86.22      South        0
+3      320          1     43.62      North        0
+4      287          1    196.89  Southeast        0
+[2025-05-27 18:57:42] - run - GMM cluster summary:
+[2025-05-27 18:57:42] - run -            Mean R    Mean F    Mean M  Number of Customer  Percentage (%)  \
+Cluster                                                                     
+0        1.043393 -0.392070 -0.138163               31056           33.98   
+1       -0.674947 -0.392070 -0.136225               48160           52.70   
+2        0.008364  2.550564  0.891137               12177           13.32   
+
+         Mid-West  North  Northeast  South  Southeast  
+Cluster                                                
+0            1741    691       3179   4677      20768  
+1            2856    815       4404   6661      33424  
+2             749    197       1025   1774       8432  
+[2025-05-27 18:57:56] - run - GMM cluster summary (Original Data):
+
+Summarizing cluster information v2...
+
+Cluster percentages and state distribution
+         Number of Customer  Percentage (%)  Mid-West  North  Northeast  \
+Cluster                                                                   
+0                     31056           33.98      1741    691       3179   
+1                     48160           52.70      2856    815       4404   
+2                     12177           13.32       749    197       1025   
+
+         South  Southeast  
+Cluster                    
+0         4677      20768  
+1         6661      33424  
+2         1774       8432  
+
+Per-cluster statistic
+
+Cluster 0
+             count        mean         std     min       1%        5%  \
+recency    31056.0  395.924620   92.913372  269.00  271.000  275.0000   
+frequency  31056.0    1.000000    0.000000    1.00    1.000    1.0000   
+monetary   31056.0  148.787211  182.170370   10.07   23.653   31.7875   
+
+               10%    25%     50%     75%      90%       95%       99%  \
+recency    278.000  315.0  384.00  466.00  531.000  561.0000   589.000   
+frequency    1.000    1.0    1.00    1.00    1.000    1.0000     1.000   
+monetary    38.415   59.0   97.72  165.78  286.645  416.3925  1019.014   
+
+               max  
+recency     694.00  
+frequency     1.00  
+monetary   2111.57  
+
+Cluster 1
+             count        mean         std    min     1%     5%    10%  \
+recency    48160.0  133.953862   76.672759   0.00   6.00  15.00  26.00   
+frequency  48160.0    1.000000    0.000000   1.00   1.00   1.00   1.00   
+monetary   48160.0  146.786618  173.645937  10.89  21.77  31.75  38.01   
+
+               25%     50%       75%      90%       95%       99%      max  
+recency    68.0000  135.00  198.0000  237.000  257.0000  267.0000   271.00  
+frequency   1.0000    1.00    1.0000    1.000    1.0000    1.0000     1.00  
+monetary   58.5775   99.93  167.1025  273.274  409.8835  921.1361  2133.69  
+
+Cluster 2
+             count        mean         std   min     1%      5%     10%  \
+recency    12177.0  238.128603  150.893568  0.00   8.00  24.000  44.000   
+frequency  12177.0    2.151187    0.358245  2.00   2.00   2.000   2.000   
+monetary   12177.0  359.730731  315.441553  9.59  32.38  58.288  86.064   
+
+              25%     50%     75%      90%      95%       99%      max  
+recency    115.00  219.00  345.00  463.000  516.200   574.000   694.00  
+frequency    2.00    2.00    2.00    3.000    3.000     3.000     3.00  
+monetary   150.06  267.74  459.45  749.324  990.292  1642.782  2132.16  
+[2025-05-27 18:58:15] - eval_metrics_single - Evaluation metrics using clustering from this code
+[2025-05-27 19:01:07] - eval_metrics_single - Silhouette Score:  0.3773216852916443
+[2025-05-27 19:01:07] - eval_metrics_single - Davies-Bouldin Index:  0.9766666080343073
+[2025-05-27 19:01:07] - eval_metrics_single - Calinski-Harabasz Index:  62422.639099319196
+Saving to gmm_result.pkl
+Saving to gmm_clean_result.pkl
