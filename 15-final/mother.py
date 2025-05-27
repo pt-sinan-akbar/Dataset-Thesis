@@ -2,10 +2,6 @@ import pandas as pd
 import utils
 from logger import Logger
 from benchmark import Benchmark
-from KMEANS import KMeansImpl
-from KPROTO import KProto
-from GMM import GMM
-from HIERARCHICAL import Hierarchical
 
 class Mother(object):
     """
@@ -66,11 +62,13 @@ class Mother(object):
         self.logger.print(f"{self.name} cluster summary:")
         self.logger.print(utils.summarize_cluster(algo_df))
         utils.plot_3d_clusters(algo_df, f"{self.name}")
+        utils.plot_pca(algo_df, labels)
         
         # original data summary
         self.logger.print(f"{self.name} cluster summary (Original Data):")
         utils.summarize_cluster_v2(algo_df_raw)
         utils.plot_3d_clusters(algo_df_raw, f"{self.name} (Clean)")
+        utils.plot_pca(algo_df_raw, labels)
         
         # evaluation metrics
         utils.eval_metrics_single(self.RFM_numerical, labels, self.logger)
@@ -78,18 +76,3 @@ class Mother(object):
         # export results
         utils.export_pickle(algo_df, f"{self.shortname}_result.pkl")
         utils.export_pickle(algo_df_raw, f"{self.shortname}_clean_result.pkl")
-        
-if __name__ = "__main__":
-    kmeans = KMeansImpl()
-    kproto = KProto()
-    gmm = GMM()
-    hierarchical = Hierarchical()
-    
-    kproto.logger.print("Welcome to the jungle")
-    
-    kmeans.run()
-    kproto.run()
-    gmm.run()
-    hierarchical.run()
-    
-    kproto.logger.print("Dan kita telah berhasil menamatkan...")

@@ -296,6 +296,11 @@ def eval_metrics_single(df, labels, logger):
     logger.print("Calinski-Harabasz Index: ", calinski_harabasz_score(df, labels))
 
 def plot_pca(data, labels, scale=True, title='PCA of Clustered Data'):
+    required_columns = ['recency', 'frequency', 'monetary', 'Cluster']
+    if not all(col in data.columns for col in required_columns):
+        raise ValueError(f"DataFrame must contain the following columns: {required_columns}")
+    data = data[required_columns]
+
     # Convert to DataFrame if not already
     if not isinstance(data, pd.DataFrame):
         data = pd.DataFrame(data)
@@ -327,4 +332,4 @@ def plot_pca(data, labels, scale=True, title='PCA of Clustered Data'):
     plt.legend(title='Cluster')
     plt.grid(True)
     plt.tight_layout()
-    plt.show()
+    plt.savefig(title.replace(' ', '_').lower() + '.png', dpi=300, bbox_inches='tight')
