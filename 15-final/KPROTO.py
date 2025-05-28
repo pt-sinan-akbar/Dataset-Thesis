@@ -14,7 +14,8 @@ class KProto(Mother):
             n_clusters=4, 
             init='Huang', 
             gamma=1.0, 
-            random_state=42
+            random_state=42,
+            n_jobs=-1
         )
         labels = kproto.fit_predict(
             kproto_df, 

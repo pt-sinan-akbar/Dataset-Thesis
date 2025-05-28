@@ -47,6 +47,7 @@ sns.boxplot(x='monetary', data=RFM)
 plt.title('Monetary Boxplot')
 # plt.show()
 plt.savefig('monetary_boxplot.png', dpi=300, bbox_inches='tight')
+plt.cla()
 
 RFM['R_Score'] = pd.qcut(RFM['recency'], 3, labels=[1, 2 ,3]).astype(str)
 RFM['M_Score'] = pd.qcut(RFM['monetary'], 3, labels=[1, 2 ,3]).astype(str)
