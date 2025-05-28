@@ -38,6 +38,13 @@ class Mother(object):
         Seems unnecessary, but DBSCAN need to override this to prevent noise point to be evaluated
         """
         utils.eval_metrics_single(self.RFM_numerical, labels, self.logger)
+        
+    def _run_pca(self, algo_df, labels):
+        """
+        This method is used to reduce the dimensionality of the data for visualization purposes.
+        Seems unnecessary, but KProto need to override this to make sure all attribute is integer
+        """
+        utils.plot_pca(data=algo_df, labels=labels, title=self.name, is_rfmd=self.is_rfmd)
     
     def run(self):
         algo_df = self.RFM_numerical.copy()
@@ -69,13 +76,13 @@ class Mother(object):
         self.logger.print(f"{self.name} cluster summary:")
         self.logger.print(utils.summarize_cluster(algo_df))
         utils.plot_3d_clusters(algo_df, f"{self.name}")
-        utils.plot_pca(data=algo_df, labels=labels, scale=False, title=self.name, is_rfmd=self.is_rfmd)
+        self._run_pca(algo_df, labels)
         
         # original data summary
         self.logger.print(f"{self.name} cluster summary (Original Data):")
         utils.summarize_cluster_v2(algo_df_raw)
         utils.plot_3d_clusters(algo_df_raw, f"{self.name} (Clean)")
-        utils.plot_pca(data=algo_df_raw, labels=labels, title=self.name + "_raw", is_rfmd=self.is_rfmd)
+        self._run_pca(algo_df_raw, labels)
         
         # evaluation metrics
         self._run_eval_metrics(labels)
