@@ -306,6 +306,10 @@ def plot_pca(data, labels, title, is_rfmd, scale=True):
     # Convert to DataFrame if not already
     if not isinstance(data, pd.DataFrame):
         data = pd.DataFrame(data)
+    print(data['State'].dtype)
+    # check if state is string, if so, convert to categorical
+    if 'State' in data.columns and data['State'].dtype == 'object':
+        data['State'] = data['State'].map(encoded_to_state)
 
     # Scale the data
     if scale:
