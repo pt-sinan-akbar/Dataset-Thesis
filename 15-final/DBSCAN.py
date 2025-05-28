@@ -9,8 +9,8 @@ class DBSCANImpl(Mother):
 
     def _run_clustering(self):
         dbscan = DBSCAN(
-            eps=0.199, 
-            min_samples=11, 
+            eps=0.167682,
+            min_samples=13,
             metric='manhattan', 
             n_jobs=-1
         )
