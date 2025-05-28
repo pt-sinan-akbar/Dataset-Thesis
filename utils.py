@@ -307,6 +307,11 @@ def plot_pca(data, labels, title, is_rfmd, scale=True):
     if not isinstance(data, pd.DataFrame):
         data = pd.DataFrame(data)
 
+    # check if state is string, if so, convert to categorical
+    if 'State' in data.columns and data['State'].dtype == 'object':
+        category_to_int = {value: key for key, value in encoded_to_state.items()}
+        data['State'] = data['State'].map(category_to_int)
+
     # Scale the data
     if scale:
         scaler = StandardScaler()
