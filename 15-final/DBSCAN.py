@@ -11,7 +11,7 @@ class DBSCANImpl(Mother):
         dbscan = DBSCAN(
             eps=0.167682,
             min_samples=13,
-            metric='manhattan', 
+            metric='euclidean', 
             n_jobs=-1
         )
         labels = dbscan.fit_predict(self.RFM_numerical)
