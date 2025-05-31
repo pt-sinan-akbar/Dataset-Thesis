@@ -295,10 +295,8 @@ def eval_metrics_single(df, labels, logger):
     logger.print("Davies-Bouldin Index: ", davies_bouldin_score(df, labels))
     logger.print("Calinski-Harabasz Index: ", calinski_harabasz_score(df, labels))
 
-def plot_pca(data, labels, title, is_rfmd, scale=True):
+def plot_pca(data, labels, title, scale=True):
     required_columns = ['recency', 'frequency', 'monetary']
-    if is_rfmd:
-        required_columns.append('State')
     if not all(col in data.columns for col in required_columns):
         raise ValueError(f"DataFrame must contain the following columns: {required_columns}")
     data = data[required_columns]
@@ -306,11 +304,6 @@ def plot_pca(data, labels, title, is_rfmd, scale=True):
     # Convert to DataFrame if not already
     if not isinstance(data, pd.DataFrame):
         data = pd.DataFrame(data)
-
-    # check if state is string, if so, convert to categorical
-    if 'State' in data.columns and data['State'].dtype == 'object':
-        category_to_int = {value: key for key, value in encoded_to_state.items()}
-        data['State'] = data['State'].map(category_to_int)
 
     # Scale the data
     if scale:

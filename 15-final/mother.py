@@ -10,7 +10,7 @@ class Mother(object):
     It is designed to be inherited by specific clustering algorithm classes.
     """
     
-    def __init__(self, name, polling_interval=0.1, is_rfmd=False):
+    def __init__(self, name, polling_interval=0.1):
         """
         Initialize the Mother class.
         This method sets up the necessary imports and configurations for clustering.
@@ -24,7 +24,6 @@ class Mother(object):
         self.benchmark = Benchmark(logger=self.logger, polling_interval=polling_interval)
         self.name = name
         self.shortname = name.replace('-', '').lower()
-        self.is_rfmd = is_rfmd
 
     def _run_clustering(self):
         """
@@ -69,13 +68,13 @@ class Mother(object):
         self.logger.print(f"{self.name} cluster summary:")
         self.logger.print(utils.summarize_cluster(algo_df))
         utils.plot_3d_clusters(algo_df, f"{self.name}")
-        utils.plot_pca(data=algo_df, labels=labels, scale=False, title=self.name, is_rfmd=self.is_rfmd)
+        utils.plot_pca(data=algo_df, labels=labels, scale=False, title=self.name)
         
         # original data summary
         self.logger.print(f"{self.name} cluster summary (Original Data):")
         utils.summarize_cluster_v2(algo_df_raw)
         utils.plot_3d_clusters(algo_df_raw, f"{self.name} (Clean)")
-        utils.plot_pca(data=algo_df_raw, labels=labels, title=self.name + "_raw", is_rfmd=self.is_rfmd)
+        utils.plot_pca(data=algo_df_raw, labels=labels, title=self.name + "_raw")
         
         # evaluation metrics
         self._run_eval_metrics(labels)
