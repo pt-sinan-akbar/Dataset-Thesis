@@ -296,7 +296,7 @@ def eval_metrics_single(df, labels, logger):
     logger.print("Calinski-Harabasz Index: ", calinski_harabasz_score(df, labels))
 
 def plot_pca(data, labels, title, scale=True):
-    required_columns = ['recency', 'frequency', 'monetary']
+    required_columns = ['recency', 'frequency', 'monetary', 'Cluster']
     if not all(col in data.columns for col in required_columns):
         raise ValueError(f"DataFrame must contain the following columns: {required_columns}")
     data = data[required_columns]

@@ -1,0 +1,23 @@
+import utils
+
+kmeans = utils.import_pickle('kmeans_result.pkl')
+kmeans_clean = utils.import_pickle('kmeans_clean_result.pkl')
+kproto = utils.import_pickle('kprototype_result.pkl')
+kproto_clean = utils.import_pickle('kprototype_clean_result.pkl')
+dbscan = utils.import_pickle('dbscan_result.pkl')
+dbscan_clean = utils.import_pickle('dbscan_clean_result.pkl')
+gmm = utils.import_pickle('gmm_result.pkl')
+gmm_clean = utils.import_pickle('gmm_clean_result.pkl')
+hierarchical = utils.import_pickle('hierarchical_result.pkl')
+hierarchical_clean = utils.import_pickle('hierarchical_clean_result.pkl')
+
+utils.plot_pca(data=kmeans, labels=kmeans['Cluster'], title='K-Means', scale=True)
+utils.plot_pca(data=kmeans_clean, labels=kmeans_clean['Cluster'], title='K-Means_raw', scale=True)
+utils.plot_pca(data=kproto, labels=kproto['Cluster'], title='K-Prototype', scale=True)
+utils.plot_pca(data=kproto_clean, labels=kproto_clean['Cluster'], title='K-Prototype_raw', scale=True)
+utils.plot_pca(data=dbscan, labels=dbscan['Cluster'], title='DBSCAN', scale=True)
+utils.plot_pca(data=dbscan_clean, labels=dbscan_clean['Cluster'], title='DBSCAN_raw', scale=True)
+utils.plot_pca(data=gmm, labels=gmm['Cluster'], title='GMM', scale=True)
+utils.plot_pca(data=gmm_clean, labels=gmm_clean['Cluster'], title='GMM_raw', scale=True)
+utils.plot_pca(data=hierarchical, labels=hierarchical['Cluster'], title='Hierarchical', scale=True)
+utils.plot_pca(data=hierarchical_clean, labels=hierarchical_clean['Cluster'], title='Hierarchical_raw', scale=True)
