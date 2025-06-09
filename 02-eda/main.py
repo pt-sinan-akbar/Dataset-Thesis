@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import seaborn as sns
 import numpy as np
@@ -81,11 +83,12 @@ max_state = geolocation_dataset.groupby(['geolocation_zip_code_prefix','geolocat
 geolocation_coords = geolocation_dataset.groupby(['geolocation_zip_code_prefix','geolocation_city','geolocation_state'])[['geolocation_lat','geolocation_lng']].median().reset_index()
 geolocation_coords = geolocation_coords.merge(max_state,on=['geolocation_zip_code_prefix','geolocation_state'],how='inner')
 customers_coords = customers_dataset.merge(geolocation_coords,left_on='customer_zip_code_prefix',right_on='geolocation_zip_code_prefix',how='inner')
-# mari mapping 
-brazil = mpimg.imread(urllib.request.urlopen('https://i.pinimg.com/originals/3a/0c/e1/3a0ce18b3c842748c255bc0aa445ad41.jpg'),'jpg')
-ax = customers_coords.drop_duplicates(subset='customer_unique_id').plot(kind="scatter", x="geolocation_lng", y="geolocation_lat", figsize=(10,10), alpha=0.3,s=0.3,c='red')
+# mari mapping
+# brazil = mpimg.imread(urllib.request.urlopen('https://i.pinimg.com/originals/3a/0c/e1/3a0ce18b3c842748c255bc0aa445ad41.jpg'),'jpg')
+brazil = mpimg.imread(os.path.join(os.path.dirname(__file__), 'BRAZILLL.png'))
+ax = customers_coords.drop_duplicates(subset='customer_unique_id').plot(kind="scatter", x="geolocation_lng", y="geolocation_lat", figsize=(10,10), alpha=0.3,s=0.3,c='purple')
 plt.axis('off')
-plt.imshow(brazil, extent=[-73.98283055, -33.8,-33.75116944,5.4])
+plt.imshow(brazil, extent=[-73.98283055, -28.94,-33.75116944,5.3])
 # plt.show()
 plt.savefig('customer_heatmap.png', dpi=300, bbox_inches='tight')
 
@@ -172,14 +175,31 @@ print(payment_counts)
 
 payment_percentages = (payment_counts / payment_counts.sum() * 100).reset_index()
 payment_percentages.columns = ['Payment Method', 'Percentage']
+distance = 0.2
+separate = [distance] * len(payment_percentages)  # Dynamically generate explode values
+
+def custom_autopct(pct):
+    # You can fine-tune this threshold and format
+    if pct < 0.05:
+        return f'\n{pct:.3f}%'  # Add a newline to move it vertically
+    else:
+        return f'{pct:.3f}%'
 
 plt.figure(figsize=(10, 6))
-plt.pie(payment_percentages['Percentage'], labels=payment_percentages['Payment Method'],
-        autopct='%1.1f%%', startangle=90, shadow=True)
+plt.pie(
+    payment_percentages['Percentage'],
+    labels=payment_percentages['Payment Method'],
+    explode=separate,
+    autopct=custom_autopct,
+    labeldistance=1.07,
+    wedgeprops={'edgecolor': 'gray', 'linewidth': .5, 'linestyle': 'solid'},
+    startangle=150
+)
 plt.axis('equal')
 plt.title('Payment Methods Distribution')
 plt.tight_layout()
-# plt.show()
 plt.savefig('payment_methods_distribution.png', dpi=300, bbox_inches='tight')
+
+
 
 print(payment_percentages)
