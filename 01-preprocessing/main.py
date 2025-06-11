@@ -28,6 +28,7 @@ order_reviews_dataset = pd.read_csv(f'{data_path}/olist_order_reviews_dataset.cs
 orders_dataset = pd.read_csv(f'{data_path}/olist_orders_dataset.csv')
 products_dataset = pd.read_csv(f'{data_path}/olist_products_dataset.csv')
 sellers_dataset = pd.read_csv(f'{data_path}/olist_sellers_dataset.csv')
+product_category_name_translation = pd.read_csv(f'{data_path}/product_category_name_translation.csv')
 
 # Check data sanity (entries and columns)
 print("Customers Dataset: ", customers_dataset.shape)
@@ -112,6 +113,7 @@ order_payments_dataset.to_pickle('order_payments_dataset.pkl')
 order_reviews_dataset.to_pickle('order_reviews_dataset.pkl')
 products_dataset.to_pickle('products_dataset.pkl')
 sellers_dataset.to_pickle('sellers_dataset.pkl')
+product_category_name_translation.to_pickle('product_category_name_translation.pkl')
 # END
 
 
