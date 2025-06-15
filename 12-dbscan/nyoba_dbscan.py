@@ -58,7 +58,6 @@ def find_optimal_eps(data, metric='euclidean', k=5, plot_path=None):
     if plot_path:
         fig = go.Figure()
 
-        # Full curve
         fig.add_trace(go.Scatter(
             x=list(x),
             y=kdistances,
@@ -77,14 +76,34 @@ def find_optimal_eps(data, metric='euclidean', k=5, plot_path=None):
                 name='Elbow Point',
                 marker=dict(color='red', size=12),
                 text=[f'Elbow ({knee_x}, {optimal_eps:.4f})'],
-                textposition='top center',
+                textposition='middle left',
+                textfont=dict(size=20),
                 hovertemplate='Elbow Point<br>Index: %{x}<br>Eps: %{y:.4f}<extra></extra>'
             ))
 
         fig.update_layout(
-            title=f"K-distance Graph - {metric.title()} (k={k})",
-            xaxis_title="Points sorted by distance",
-            yaxis_title=f"{metric.title()} distance to {k}th nearest neighbor",
+            title=dict(
+                text=f"K-distance Graph - {metric.title()} (k={k})",
+                font=dict(size=20)
+            ),
+            xaxis=dict(
+                title=dict(
+                    text="Points sorted by distance",
+                    font=dict(size=16)
+                ),
+                tickfont=dict(size=14)
+            ),
+            yaxis=dict(
+                title=dict(
+                    text=f"{metric.title()} distance to {k}th nearest neighbor",
+                    font=dict(size=16)
+                ),
+                tickfont=dict(size=14)
+            ),
+            legend=dict(
+                font=dict(size=14)
+            ),
+            font=dict(size=14),
             hovermode='closest',
             template='plotly_white'
         )
@@ -95,7 +114,7 @@ def find_optimal_eps(data, metric='euclidean', k=5, plot_path=None):
 
 # 2. Compute eps values for different metrics and k values
 metrics = ['euclidean', 'manhattan']
-k_range = range(6, 101)  # k values from 6 to 100
+k_range = range(12, 13)  # k values from 6 to 100
 
 logger.print("\nFinding optimal eps values for different k values:")
 

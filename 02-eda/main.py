@@ -132,13 +132,14 @@ print(f"99th percentile expense: R$ {perc_99:.2f}")
 plt.figure(figsize=(10, 6))
 plt.hist(customer_expenses['Total Expense'], bins=50, range=(0, perc_99))
 plt.axvline(avg_expense, color='red', linestyle='dashed', linewidth=1)
-plt.text(avg_expense*1.1, plt.ylim()[1]*0.9, f'Mean: R$ {avg_expense:.2f}')
-plt.title('Distribution of Customer Expenses')
-plt.xlabel('Total Expense (R$)')
-plt.ylabel('Number of Customers')
+plt.text(avg_expense*1.1, plt.ylim()[1]*0.9, f'Mean: R$ {avg_expense:.2f}', color='red', fontsize=12)
+plt.title('Distribution of Customer Expenses', fontsize=16)
+plt.xlabel('Total Expense (R$)', fontsize=14)
+plt.ylabel('Number of Customers', fontsize=14)
 plt.xlim(0, perc_99)
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
+plt.tick_params(axis='both', which='major', labelsize=12)
 # plt.show()
 plt.savefig('customer_expenses_histogram.png', dpi=300, bbox_inches='tight')
 
@@ -162,11 +163,12 @@ print(f"Average yearly orders: {avg_yearly_orders:.2f}")
 plt.figure(figsize=(12, 6))
 plt.plot(monthly_orders['date'], monthly_orders['order_count'])
 plt.axhline(avg_monthly_orders, color='red', linestyle='dashed')
-plt.title('Number of Orders per Month')
-plt.xlabel('Date')
-plt.ylabel('Number of Orders')
+plt.title('Number of Orders per Month', fontsize=16)
+plt.xlabel('Date', fontsize=14)
+plt.ylabel('Number of Orders', fontsize=14)
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
+plt.tick_params(axis='both', which='major', labelsize=12)
 # plt.show()
 plt.savefig('order_monthly.png', dpi=300, bbox_inches='tight')
 
@@ -185,16 +187,28 @@ def custom_autopct(pct):
     else:
         return f'{pct:.3f}%'
 
-plt.figure(figsize=(10, 6))
+plt.figure(figsize=(8, 6))
 plt.pie(
     payment_percentages['Percentage'],
-    labels=payment_percentages['Payment Method'],
+    # labels=payment_percentages['Payment Method'],
     explode=separate,
     autopct=custom_autopct,
     labeldistance=1.07,
     wedgeprops={'edgecolor': 'gray', 'linewidth': .5, 'linestyle': 'solid'},
-    startangle=150
+    startangle=150,
+    textprops={'fontsize': 14, 'color': 'black'},
 )
+
+plt.legend(
+    payment_percentages['Payment Method'],
+    title='Payment Methods',
+    loc='center left',
+    bbox_to_anchor=(1, 0, 0.5, 1),
+    fontsize=12,
+    title_fontsize='14',
+    frameon=False
+)
+
 plt.axis('equal')
 plt.title('Payment Methods Distribution')
 plt.tight_layout()

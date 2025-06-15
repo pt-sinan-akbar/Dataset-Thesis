@@ -87,10 +87,14 @@ fig.set_size_inches(16, 16)
 squarify.plot(sizes=segment_wise['Count'],
               label=segment_wise.index,
               color=['gold', 'teal', 'steelblue', 'limegreen'],
-              alpha=0.8)
+              alpha=0.8,
+              text_kwargs={'fontsize': 20, 'weight': 'normal', 'color': 'black'},
+              )
 plt.title("RFM Segments")
 plt.axis('off')
+plt.rc('font', size=14)
 # plt.show()
+plt.title("RFM Segments", fontsize=20)
 plt.savefig('rfm_segments.png', dpi=300, bbox_inches='tight')
 
 # pake score our lord sinan

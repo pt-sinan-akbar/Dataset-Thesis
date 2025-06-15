@@ -283,20 +283,31 @@ plt.tight_layout()
 # plt.show()
 plt.savefig('post_transformations_skewness.png', dpi=300, bbox_inches='tight')
 
+sns.set_context("notebook", font_scale=2)
+
 # plot frequency before and after log transformation
-fig, axes = plt.subplots(1, 4, figsize=(16, 6))
+fig, axes = plt.subplots(2, 2, figsize=(15, 15))
 
-sns.boxplot(x='frequency', data=RFMD_features, ax=axes[0])
-axes[0].set_title('Frequency Boxplot')
+sns.boxplot(x='frequency', data=RFMD_features, ax=axes[0, 0])
+axes[0,0].set_title('Frequency Boxplot')
 
-sns.boxplot(x='frequency_selected', data=RFMD_features, ax=axes[1])
-axes[1].set_title('Yeo-Johnson Frequency Boxplot')
+sns.boxplot(x='frequency_selected', data=RFMD_features, ax=axes[0, 1])
+axes[0,1].set_title('Yeo-Johnson Frequency Boxplot')
 
-sns.boxplot(x='monetary', data=RFMD_features, ax=axes[2])
-axes[2].set_title('Monetary Boxplot')
+sns.boxplot(x='monetary', data=RFMD_features, ax=axes[1, 0])
+axes[1,0].set_title('Monetary Boxplot')
 
-sns.boxplot(x='monetary_selected', data=RFMD_features, ax=axes[3])
-axes[3].set_title('Yeo-Johnson Monetary Boxplot')
+sns.boxplot(x='monetary_selected', data=RFMD_features, ax=axes[1, 1])
+axes[1,1].set_title('Yeo-Johnson Monetary Boxplot')
+
+# increase font size of the axes labels
+for ax in axes.flat:
+    ax.set_xlabel(ax.get_xlabel(), fontsize=20)
+    ax.set_ylabel(ax.get_ylabel(), fontsize=20)
+
+# increase font size of the tick labels
+for ax in axes.flat:
+    ax.tick_params(axis='both', labelsize=15)
 
 plt.tight_layout()
 # plt.show()

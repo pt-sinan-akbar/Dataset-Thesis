@@ -1,6 +1,7 @@
 import pickle
 import pandas as pd
 import seaborn as sns
+from PIL.ImageOps import scale
 from sklearn.preprocessing import StandardScaler, RobustScaler
 import matplotlib.pyplot as plt
 
@@ -25,7 +26,9 @@ RFMD_scaled_standard = scaler.fit_transform(RFMD_transformed[['recency', 'freque
 robust = pd.DataFrame(RFMD_scaled_robust, columns=['recency', 'frequency', 'monetary'])
 standard = pd.DataFrame(RFMD_scaled_standard, columns=['recency', 'frequency', 'monetary'])
 
-fig, axes = plt.subplots(3, 3, figsize=(20, 15))
+fig, axes = plt.subplots(2, 3, figsize=(20, 15))
+
+sns.set_context("notebook", font_scale=2)
 
 # before scaling
 sns.boxplot(x='recency', data=RFMD_transformed, ax=axes[0, 0])
@@ -37,25 +40,24 @@ axes[0, 1].set_title('Frequency Boxplot (Before Scaling)')
 sns.boxplot(x='monetary', data=RFMD_transformed, ax=axes[0, 2])
 axes[0, 2].set_title('Monetary Boxplot (Before Scaling)')
 
-# robust scaler
-sns.boxplot(x='recency', data=robust, ax=axes[1, 0])
-axes[1, 0].set_title('Recency Boxplot (RobustScaler)')
-
-sns.boxplot(x='frequency', data=robust, ax=axes[1, 1])
-axes[1, 1].set_title('Frequency Boxplot (RobustScaler)')
-
-sns.boxplot(x='monetary', data=robust, ax=axes[1, 2])
-axes[1, 2].set_title('Monetary Boxplot (RobustScaler)')
-
 # standard scaler
-sns.boxplot(x='recency', data=standard, ax=axes[2, 0])
-axes[2, 0].set_title('Recency Boxplot (StandardScaler)')
+sns.boxplot(x='recency', data=standard, ax=axes[1, 0])
+axes[1, 0].set_title('Recency Boxplot (StandardScaler)')
 
-sns.boxplot(x='frequency', data=standard, ax=axes[2, 1])
-axes[2, 1].set_title('Frequency Boxplot (StandardScaler)')
+sns.boxplot(x='frequency', data=standard, ax=axes[1, 1])
+axes[1, 1].set_title('Frequency Boxplot (StandardScaler)')
 
-sns.boxplot(x='monetary', data=standard, ax=axes[2, 2])
-axes[2, 2].set_title('Monetary Boxplot (StandardScaler)')
+sns.boxplot(x='monetary', data=standard, ax=axes[1, 2])
+axes[1, 2].set_title('Monetary Boxplot (StandardScaler)')
+
+# increase font size of the axes labels
+for ax in axes.flat:
+    ax.set_xlabel(ax.get_xlabel(), fontsize=20)
+    ax.set_ylabel(ax.get_ylabel(), fontsize=20)
+
+# increase font size of the tick labels
+for ax in axes.flat:
+    ax.tick_params(axis='both', labelsize=15)
 
 plt.tight_layout()
 # plt.show()
