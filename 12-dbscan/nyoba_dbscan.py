@@ -101,7 +101,7 @@ def find_optimal_eps(data, metric='euclidean', k=5, plot_path=None):
                 tickfont=dict(size=14)
             ),
             legend=dict(
-                font=dict(size=14)
+                font=dict(size=18)
             ),
             font=dict(size=14),
             hovermode='closest',
