@@ -92,11 +92,32 @@ def print_outlier_analysis(df, outlier_results, df_clean):
     print("--- Outlier Analysis ---")
     for column, results in outlier_results.items():
         print(f"Column: {column}")
-        print(f"Outliers Count: {results['Outliers Count']}")
-        print(f"Outlier Percentage: {results['Outlier Percentage']:.2f}%\n")
+        print(f"Outliers Count from this column: {results['Outliers Count']}")
+        print(f"Outlier Percentage from this column: {results['Outlier Percentage']:.2f}%\n")
+    # print("--- Outlier Removal Summary ---")
+    
+    # Calculate Z-scores
+    z_freq = np.abs((RFMD_Raw['frequency'] - RFMD_Raw['frequency'].mean()) / RFMD_Raw['frequency'].std())
+    z_monetary = np.abs((RFMD_Raw['monetary'] - RFMD_Raw['monetary'].mean()) / RFMD_Raw['monetary'].std())
+    
+    # Outlier masks
+    outlier_freq = z_freq > 3
+    outlier_monetary = z_monetary > 3
+    
+    # Outlier in both columns
+    both_outlier = outlier_freq & outlier_monetary
+    
+    # Outlier in either column (at least one)
+    either_outlier = outlier_freq | outlier_monetary
+    
+    # Outlier in only one column (exclusive or)
+    only_one_outlier = outlier_freq ^ outlier_monetary
+    
+    # print("Rows with outlier in only one column:", only_one_outlier.sum())
+    # print("Rows with outlier in both columns:", both_outlier.sum())
+    print(f"Rows with outlier in either column: {either_outlier.sum()} or {(either_outlier.sum() / len(df)) * 100:.2f}% from total rows")
 
-
-    print("--- Descriptive Statistics ---")
+    print("\n--- Descriptive Statistics ---")
     print(f"Original DataFrame size: {len(df)}")
     print(f"Cleaned DataFrame size: {len(df_clean)}")
     print(f"Total Rows Removed: {len(df) - len(df_clean)}")
