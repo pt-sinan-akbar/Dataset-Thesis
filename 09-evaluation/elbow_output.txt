@@ -1,0 +1,21 @@
+WCSS for k = 1 is 274178.9999999997
+WCSS for k = 2 is 171628.51265476365
+WCSS for k = 3 is 115733.40266068398
+WCSS for k = 4 is 83091.44897640569
+WCSS for k = 5 is 69842.28138318911
+WCSS for k = 6 is 61859.466984797975
+WCSS for k = 7 is 53464.906161525505
+WCSS for k = 8 is 46103.16374178167
+WCSS for k = 9 is 42314.773417942466
+WCSS for k = 10 is 38764.650965564484
+
+Percentage difference between consecutive K values:
+From K=1 to K=2: 37.40% decrease
+From K=2 to K=3: 32.57% decrease
+From K=3 to K=4: 28.20% decrease
+From K=4 to K=5: 15.95% decrease
+From K=5 to K=6: 11.43% decrease
+From K=6 to K=7: 13.57% decrease
+From K=7 to K=8: 13.77% decrease
+From K=8 to K=9: 8.22% decrease
+From K=9 to K=10: 8.39% decrease

@@ -1,4 +1,5 @@
 import pickle
+import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
@@ -31,9 +32,10 @@ RFM_numerical = pd.DataFrame(RFMD_final, columns=['recency', 'frequency', 'monet
 inertias = []
 
 for k in range(1, 11):
-    kmeans = KMeans(n_clusters=k)
+    kmeans = KMeans(n_clusters=k, random_state=42)
     kmeans.fit(RFM_numerical)
     inertias.append(kmeans.inertia_)
+    print("WCSS for k =", k, "is", kmeans.inertia_)
 
 plt.figure(figsize=(10, 6))
 
@@ -68,3 +70,10 @@ plt.legend()
 plt.tight_layout()
 # plt.show()
 plt.savefig('elbow_kmeans.png', dpi=300, bbox_inches='tight')
+
+wcss_diffs = np.diff(inertias)
+percentage_decrease = [-diff/inertias[i] * 100 for i, diff in enumerate(wcss_diffs)]
+
+print("\nPercentage difference between consecutive K values:")
+for i, decrease in enumerate(percentage_decrease):
+    print(f"From K={i+1} to K={i+2}: {decrease:.2f}% decrease")
