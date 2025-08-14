@@ -2,3 +2,4 @@
 auxil/
 out/
 *.pyc
+.DS_Store
