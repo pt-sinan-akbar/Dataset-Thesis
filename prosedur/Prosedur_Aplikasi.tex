@@ -1,0 +1,288 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[bahasa]{babel}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{newtxtext}
+\usepackage{newtxmath}
+\usepackage{graphicx}
+\graphicspath{{./}}
+
+\geometry{a4paper, margin=1in}
+\title{\textbf{PROSEDUR MENJALANKAN PROGRAM} YANG DIKEMBANGKAN PADA SKRIPSI "IMPLEMENTASI ALGORITMA MACHINE LEARNING UNTUK SEGMENTASI PELANGGAN" }
+\author{oleh \\
+    \begin{tabular}{l c}
+        Muhammad Sinan Abdussyakur & 2502014381 \\
+        Maulana Ahmad Sulami       & 2502025706 \\
+        Muhammad Raditya           & 2502032144
+    \end{tabular} \\
+}
+
+\begin{document}
+
+    \maketitle
+
+    \noindent Untuk menggunakan aplikasi ini, anda dapat langsung mengakses melalui tautan berikut:
+    \begin{verbatim}
+https://skrispi.dta32.my.id
+    \end{verbatim}
+    Atau anda dapat mengunduh kode sumbernya dan menjalankannya secara lokal di sistem operasi anda.
+    Proyek ini terdiri dari dua bagian utama: \textbf{Frontend} dan \textbf{Backend}.
+
+
+    \section{Frontend Clustering (fe-clustering)}
+    Hal pertama yang perlu dilakukan adalah mengunduh kode sumber dari repositori GitHub.
+    Untuk melakukan ini, anda dapat melakukan \textit{clone} repositori menggunakan perintah Git berikut:
+    \url{
+        https://github.com/pt-sinan-akbar/fe-clustering.git
+    } \\
+    Atau mengunduh sebagai file ZIP melalui repositori GitHub berikut:
+    \url{
+        https://github.com/pt-sinan-akbar/fe-clustering/
+    } \\
+    Proyek ini dapat dijalankan secara lokal di sistem operasi Anda atau menggunakan Docker.
+
+    \subsection{Instalasi secara \textit{Native}}
+
+    \subsubsection{\textit{Requirements}}
+    \begin{itemize}
+        \item Node.js 22.x
+        \item npm 10.x
+    \end{itemize}
+
+    \subsubsection{Langkah-langkah Instalasi}
+    \begin{enumerate}
+        \item \textbf{Masuk ke Direktori Proyek}
+        \begin{verbatim}
+cd fe-clustering
+        \end{verbatim}
+
+        \item \textbf{Instal Dependensi} \\
+        Jalankan perintah berikut untuk menginstal semua paket yang dibutuhkan.
+        \begin{verbatim}
+npm install
+        \end{verbatim}
+
+        \item \textbf{Konfigurasi Environment} \\
+        Salin file \texttt{.env.example} menjadi file \texttt{.env}.
+        File ini digunakan untuk menyimpan \textit{environment variables} yang diperlukan oleh aplikasi.
+        \begin{verbatim}
+cp .env.example .env
+        \end{verbatim}
+        Anda dapat mengubah nilai \texttt{VITE\_API\_BASE\_URL} di dalam file \texttt{.env} ke URL API yang sesuai dengan kebutuhan Anda.
+        Misalnya:
+        \begin{verbatim}
+VITE_API_BASE_URL=https://skrispi.dta32.my.id
+        \end{verbatim}
+        Jika ingin menggunakan API yang sudah disediakan, atau dapat menggunakan:
+        \begin{verbatim}
+VITE_API_BASE_URL=http://localhost:8080
+        \end{verbatim}
+        Jika backend dijalankan secara lokal (baik secara native ataupun menggunakan Docker) dan berada pada port 8080.
+
+        \item \textbf{Jalankan Aplikasi Frontend} \\
+        Perintah ini akan menjalankan aplikasi dalam mode pengembangan dengan fitur \textit{hot-reload}.
+        \begin{verbatim}
+npm run dev
+        \end{verbatim}
+
+        \item \textbf{Akses Aplikasi} \\
+        Buka browser dan akses alamat URL yang ditampilkan di terminal (biasanya \url{http://localhost:5173}).
+    \end{enumerate}
+
+    \subsubsection{Build untuk Produksi}
+    Untuk membuat versi produksi dari aplikasi, jalankan perintah berikut.
+    Hasilnya akan tersimpan di dalam direktori \texttt{/dist}.
+    \begin{verbatim}
+npm run build
+    \end{verbatim}
+
+    \subsection{Instalasi dan Menjalankan menggunakan Docker}
+    Prosedur ini menjelaskan cara menjalankan proyek di dalam sebuah kontainer Docker.
+
+    \subsubsection{\textit{Requirements}}
+    \begin{itemize}
+        \item Docker 28.x atau lebih baru, terinstal dan sedang berjalan.
+    \end{itemize}
+
+    \subsubsection{Langkah-langkah}
+    Selain menggunakan metode instalasi ini, anda juga dapat \textit{pull} image yang telah disediakan di Docker Hub dengan perintah:
+    \begin{verbatim}
+docker pull dta32/fe-clustering:latest
+    \end{verbatim}
+    Jika menggunakan metode \textit{pull} image, anda dapat langsung melompat ke langkah 3.
+    \begin{enumerate}
+        \item \textbf{Masuk ke Direktori Proyek}
+        \begin{verbatim}
+cd fe-clustering
+        \end{verbatim}
+
+        \item \textbf{Build Docker Image} \\
+        Jalankan perintah berikut untuk membuat Docker image.
+        Perintah ini akan menggunakan \texttt{Dockerfile} yang ada di proyek.
+        Anda harus menyediakan URL API melalui \textit{build argument}.
+        \begin{verbatim}
+docker build --build-arg VITE_API_BASE_URL={VITE_API_BASE_URL} -t fe-clustering:latest .
+        \end{verbatim}
+        Ganti nilai \texttt{VITE\_API\_BASE\_URL} dengan URL API yang telah disediakan atau yang berjalan secara lokal,
+        sesuai dengan kebutuhan anda, (lihat pada bagian 1.3 untuk contoh).
+
+        \item \textbf{Jalankan Docker Container} \\
+        Setelah image berhasil dibuat, jalankan sebagai sebuah kontainer dengan perintah berikut.
+        \begin{verbatim}
+docker run -d -p 5173:80 --name fe-clustering-container fe-clustering:latest
+        \end{verbatim}
+        Atau gunakan perintah berikut jika anda menggunakan metode \textit{pull} image:
+        \begin{verbatim}
+docker run -d -p 5173:80 --name fe-clustering-container dta32/fe-clustering:latest
+        \end{verbatim}
+
+        \item \textbf{Akses Aplikasi} \\
+        Buka browser dan akses alamat \url{http://localhost:5173}.
+    \end{enumerate}
+
+    \subsubsection{Menghentikan dan Menghapus Kontainer}
+    Untuk menghentikan kontainer, gunakan perintah:
+    \begin{verbatim}
+docker stop fe-clustering-container
+    \end{verbatim}
+    Untuk menghapus kontainer setelah dihentikan:
+    \begin{verbatim}
+docker rm fe-clustering-container
+    \end{verbatim}
+
+    \subsection{Prosedur Penggunaan Frontend}
+    Setelah aplikasi frontend berhasil di-install dan dijalankan, Anda dapat mengaksesnya melalui browser. \\
+    Pada aplikasi ini, terdapat beberapa halaman yang dapat diakses:
+    \begin{itemize}
+        \item \textbf{Home} \\
+        \begin{center}
+            \includegraphics[width=12cm]{home}
+        \end{center}
+        Menampilkan ringkasan dari penelitian yang telah dilakukan.
+        \item \textbf{Algorithms} \\
+        \begin{center}
+            \includegraphics[width=12cm]{algorithms}
+        \end{center}
+        Menampilkan informasi terkait hasil \textit{clustering }dari suatu algoritma yang pengguna pilih.
+        Ada lima komponen utama dalam
+        tampilan ini, yaitu 3D \textit{Scatter Plot }yang menampilkan distribusi \textit{cluster }secara interaktif,
+        karena setiap titik pada\textit{ plot }ini dapat dilihat informasi ringkasnya saat di \textit{hover}, \textit{plot }ini juga
+        dapat di filter berdasarkan \textit{cluster} dengan menekan \textit{cluster }yang ingin disembunyikan pada
+        \textit{legend }di bawah kanan \textit{plot}. \\
+        Tampilan ini juga menampilkan daftar pelanggan\textit{ }pada tabel yang dilengkapi fitur
+        \textit{searching}, \textit{sorting}, dan juga \textit{filtering}. Selain itu, terdapat tabel hasil \textit{clustering }yang berisi
+        distribusi \textit{cluster }dengan distribusi geografis masing-masing \textit{cluster}. Kemudian, tampilan ini
+        juga menampilkan parameter dan hasil metrik evaluasi dari algoritma yang dipilih.
+        \item \textbf{About} \\
+        \begin{center}
+            \includegraphics[width=12cm]{about}
+        \end{center}
+        Menampilkan daftar peneliti yang terlibat dalam penelitian ini, serta ringkasan tentang penelitian yang dilakukan.
+    \end{itemize}
+
+
+    \section{Backend Clustering (be-clustering)}
+    Bagian ini menjelaskan cara instalasi dan menjalankan backend API yang dibangun menggunakan FastAPI dan PostgreSQL.
+
+    \subsection{Instalasi secara \textit{Native}}
+
+    \subsubsection{\textit{Requirements}}
+    \begin{itemize}
+        \item Python 3.11
+        \item pip
+        \item PostgreSQL (akses database)
+    \end{itemize}
+
+    \subsubsection{Langkah-langkah Instalasi}
+    \begin{enumerate}
+        \item \textbf{Clone repositori backend}
+        \begin{verbatim}
+git clone https://github.com/pt-sinan-akbar/be-clustering.git
+cd be-clustering
+        \end{verbatim}
+
+        \item \textbf{Buat dan aktifkan virtual environment}
+        \begin{verbatim}
+python -m venv venv
+source venv/bin/activate
+        \end{verbatim}
+
+        \item \textbf{Instal dependensi}
+        \begin{verbatim}
+pip install -r requirements.txt
+        \end{verbatim}
+
+        \item \textbf{Konfigurasi environment}
+        \begin{verbatim}
+cp .env_dummy .env
+        \end{verbatim}
+        Edit file \texttt{.env} dan sesuaikan kredensial database PostgreSQL Anda.
+
+        \item \textbf{Jalankan aplikasi}
+        \begin{verbatim}
+uvicorn main:app --reload
+        \end{verbatim}
+        API akan berjalan di \url{http://localhost:8080}
+    \end{enumerate}
+
+    \subsection{Instalasi dan Menjalankan menggunakan Docker}
+
+    \subsubsection{\textit{Requirements}}
+    \begin{itemize}
+        \item Docker 28.x atau lebih baru, terinstal dan sedang berjalan.
+    \end{itemize}
+
+    \subsubsection{Langkah-langkah}
+    Selain menggunakan metode instalasi ini, anda juga dapat \textit{pull} image yang telah disediakan di Docker Hub dengan perintah:
+    \begin{verbatim}
+docker pull dta32/be-clustering:latest
+    \end{verbatim}
+    Jika menggunakan metode \textit{pull} image, anda dapat langsung melompat ke langkah 4.
+    \begin{enumerate}
+        \item \textbf{Clone repositori backend}
+        \begin{verbatim}
+git clone https://github.com/pt-sinan-akbar/be-clustering.git
+cd be-clustering
+        \end{verbatim}
+
+        \item \textbf{Salin dan edit file environment}
+        \begin{verbatim}
+cp .env_dummy .env
+        \end{verbatim}
+        Edit file \texttt{.env} dan sesuaikan kredensial database PostgreSQL Anda.
+
+        \item \textbf{Build Docker image}
+        \begin{verbatim}
+docker build -t be-clustering:latest .
+        \end{verbatim}
+
+        \item \textbf{Jalankan Docker container} \\
+        Setelah image berhasil dibuat, jalankan sebagai sebuah kontainer dengan perintah berikut.
+        \begin{verbatim}
+docker run --name be-clustering-container -v $(pwd)/.env:/app/.env -d -p 8080:8080 be-clustering:latest
+        \end{verbatim}
+        Atau gunakan perintah berikut jika anda menggunakan metode \textit{pull} image.
+        \begin{verbatim}
+docker run --name be-clustering-container -v $(pwd)/.env:/app/.env -d -p 8080:8080 dta32/be-clustering:latest
+        \end{verbatim}
+        \item \textbf{Akses API}
+        \url{http://localhost:8080}
+    \end{enumerate}
+
+    \subsubsection{Menghentikan dan Menghapus Kontainer}
+    Untuk menghentikan kontainer:
+    \begin{verbatim}
+docker stop clustering-api-container
+    \end{verbatim}
+    Untuk menghapus kontainer setelah dihentikan:
+    \begin{verbatim}
+docker rm clustering-api-container
+    \end{verbatim}
+
+    \subsection{Prosedur Penggunaan Backend}
+    Setelah aplikasi backend berhasil di-install dan dijalankan, backend dapat digunakan dengan menggunakan Frontend
+    secara bersamaan, hal ini dikarenakan Backend hanya berguna untuk mengambil dan mengolah lalu menyajikan data
+    yang diperlukan oleh Frontend
+
+\end{document}
