@@ -3,10 +3,46 @@
 \usepackage[bahasa]{babel}
 \usepackage{geometry}
 \usepackage{hyperref}
-\usepackage{newtxtext}
-\usepackage{newtxmath}
 \usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{mdframed}
+\usepackage{verbatim}
+
 \graphicspath{{./}}
+
+% Define a custom style for code blocks
+\definecolor{codegray}{rgb}{0.95,0.95,0.95}
+\definecolor{framecolor}{rgb}{0.7,0.7,0.7}
+
+\mdfdefinestyle{codestyle}{
+    backgroundcolor=codegray,
+    linecolor=framecolor,
+    linewidth=1pt,
+    frametitlerule=true,
+    frametitlebackgroundcolor=gray!20,
+    innertopmargin=8pt,
+    innerbottommargin=8pt,
+    innerleftmargin=10pt,
+    innerrightmargin=10pt,
+    skipabove=10pt,
+    skipbelow=10pt
+}
+
+% Custom command for URLs in code boxes
+\newcommand{\urlbox}[1]{%
+    \begin{mdframed}[style=codestyle]
+    \begin{center}
+    \texttt{#1}
+    \end{center}
+    \end{mdframed}
+}
+
+% Simple code command for single line codes
+\newcommand{\inlinecode}[1]{%
+    \begin{mdframed}[style=codestyle]
+    \texttt{\small #1}
+    \end{mdframed}
+}
 
 \geometry{a4paper, margin=1in}
 \title{\textbf{PROSEDUR MENJALANKAN PROGRAM} YANG DIKEMBANGKAN PADA SKRIPSI "IMPLEMENTASI ALGORITMA MACHINE LEARNING UNTUK SEGMENTASI PELANGGAN" }
@@ -17,15 +53,14 @@
         Muhammad Raditya           & 2502032144
     \end{tabular} \\
 }
+\date{}
 
 \begin{document}
 
     \maketitle
 
     \noindent Untuk menggunakan aplikasi ini, anda dapat langsung mengakses melalui tautan berikut:
-    \begin{verbatim}
-https://skrispi.dta32.my.id
-    \end{verbatim}
+    \urlbox{https://skrispi.dta32.my.id}
     Atau anda dapat mengunduh kode sumbernya dan menjalankannya secara lokal di sistem operasi anda.
     Proyek ini terdiri dari dua bagian utama: \textbf{Frontend} dan \textbf{Backend}.
 
@@ -53,38 +88,35 @@ https://skrispi.dta32.my.id
     \subsubsection{Langkah-langkah Instalasi}
     \begin{enumerate}
         \item \textbf{Masuk ke Direktori Proyek}
-        \begin{verbatim}
-cd fe-clustering
-        \end{verbatim}
+
+        \inlinecode{cd fe-clustering}
 
         \item \textbf{Instal Dependensi} \\
         Jalankan perintah berikut untuk menginstal semua paket yang dibutuhkan.
-        \begin{verbatim}
-npm install
-        \end{verbatim}
+
+        \inlinecode{npm install}
 
         \item \textbf{Konfigurasi Environment} \\
         Salin file \texttt{.env.example} menjadi file \texttt{.env}.
         File ini digunakan untuk menyimpan \textit{environment variables} yang diperlukan oleh aplikasi.
-        \begin{verbatim}
-cp .env.example .env
-        \end{verbatim}
+
+        \inlinecode{cp .env.example .env}
+
         Anda dapat mengubah nilai \texttt{VITE\_API\_BASE\_URL} di dalam file \texttt{.env} ke URL API yang sesuai dengan kebutuhan Anda.
         Misalnya:
-        \begin{verbatim}
-VITE_API_BASE_URL=https://skrispi.dta32.my.id
-        \end{verbatim}
+
+        \inlinecode{VITE\_API\_BASE\_URL=https://skrispi.dta32.my.id}
+
         Jika ingin menggunakan API yang sudah disediakan, atau dapat menggunakan:
-        \begin{verbatim}
-VITE_API_BASE_URL=http://localhost:8080
-        \end{verbatim}
+
+        \inlinecode{VITE\_API\_BASE\_URL=http://localhost:8080}
+
         Jika backend dijalankan secara lokal (baik secara native ataupun menggunakan Docker) dan berada pada port 8080.
 
         \item \textbf{Jalankan Aplikasi Frontend} \\
         Perintah ini akan menjalankan aplikasi dalam mode pengembangan dengan fitur \textit{hot-reload}.
-        \begin{verbatim}
-npm run dev
-        \end{verbatim}
+
+        \inlinecode{npm run dev}
 
         \item \textbf{Akses Aplikasi} \\
         Buka browser dan akses alamat URL yang ditampilkan di terminal (biasanya \url{http://localhost:5173}).
@@ -93,9 +125,8 @@ npm run dev
     \subsubsection{Build untuk Produksi}
     Untuk membuat versi produksi dari aplikasi, jalankan perintah berikut.
     Hasilnya akan tersimpan di dalam direktori \texttt{/dist}.
-    \begin{verbatim}
-npm run build
-    \end{verbatim}
+
+    \inlinecode{npm run build}
 
     \subsection{Instalasi dan Menjalankan menggunakan Docker}
     Prosedur ini menjelaskan cara menjalankan proyek di dalam sebuah kontainer Docker.
@@ -107,35 +138,41 @@ npm run build
 
     \subsubsection{Langkah-langkah}
     Selain menggunakan metode instalasi ini, anda juga dapat \textit{pull} image yang telah disediakan di Docker Hub dengan perintah:
-    \begin{verbatim}
-docker pull dta32/fe-clustering:latest
-    \end{verbatim}
+
+    \inlinecode{docker pull dta32/fe-clustering:latest}
     Jika menggunakan metode \textit{pull} image, anda dapat langsung melompat ke langkah 3.
     \begin{enumerate}
         \item \textbf{Masuk ke Direktori Proyek}
-        \begin{verbatim}
-cd fe-clustering
-        \end{verbatim}
+
+        \inlinecode{cd fe-clustering}
 
         \item \textbf{Build Docker Image} \\
         Jalankan perintah berikut untuk membuat Docker image.
         Perintah ini akan menggunakan \texttt{Dockerfile} yang ada di proyek.
         Anda harus menyediakan URL API melalui \textit{build argument}.
-        \begin{verbatim}
-docker build --build-arg VITE_API_BASE_URL={VITE_API_BASE_URL} -t fe-clustering:latest .
-        \end{verbatim}
+
+        \begin{mdframed}[style=codestyle]
+            \small\texttt{docker build --build-arg VITE\_API\_BASE\_URL=\{VITE\_API\_BASE\_URL\}} \\
+            \small\texttt{-t fe-clustering:latest .}
+        \end{mdframed}
+
         Ganti nilai \texttt{VITE\_API\_BASE\_URL} dengan URL API yang telah disediakan atau yang berjalan secara lokal,
         sesuai dengan kebutuhan anda, (lihat pada bagian 1.3 untuk contoh).
 
         \item \textbf{Jalankan Docker Container} \\
         Setelah image berhasil dibuat, jalankan sebagai sebuah kontainer dengan perintah berikut.
-        \begin{verbatim}
-docker run -d -p 5173:80 --name fe-clustering-container fe-clustering:latest
-        \end{verbatim}
+
+        \begin{mdframed}[style=codestyle]
+            \small\texttt{docker run -d -p 5173:80 --name fe-clustering-container} \\
+            \small\texttt{fe-clustering:latest}
+        \end{mdframed}
+
         Atau gunakan perintah berikut jika anda menggunakan metode \textit{pull} image:
-        \begin{verbatim}
-docker run -d -p 5173:80 --name fe-clustering-container dta32/fe-clustering:latest
-        \end{verbatim}
+
+        \begin{mdframed}[style=codestyle]
+            \small\texttt{docker run -d -p 5173:80 --name fe-clustering-container} \\
+            \small\texttt{dta32/fe-clustering:latest}
+        \end{mdframed}
 
         \item \textbf{Akses Aplikasi} \\
         Buka browser dan akses alamat \url{http://localhost:5173}.
@@ -143,13 +180,11 @@ docker run -d -p 5173:80 --name fe-clustering-container dta32/fe-clustering:late
 
     \subsubsection{Menghentikan dan Menghapus Kontainer}
     Untuk menghentikan kontainer, gunakan perintah:
-    \begin{verbatim}
-docker stop fe-clustering-container
-    \end{verbatim}
+
+    \inlinecode{docker stop fe-clustering-container}
     Untuk menghapus kontainer setelah dihentikan:
-    \begin{verbatim}
-docker rm fe-clustering-container
-    \end{verbatim}
+
+    \inlinecode{docker rm fe-clustering-container}
 
     \subsection{Prosedur Penggunaan Frontend}
     Setelah aplikasi frontend berhasil di-install dan dijalankan, Anda dapat mengaksesnya melalui browser. \\
@@ -197,32 +232,33 @@ docker rm fe-clustering-container
     \subsubsection{Langkah-langkah Instalasi}
     \begin{enumerate}
         \item \textbf{Clone repositori backend}
-        \begin{verbatim}
-git clone https://github.com/pt-sinan-akbar/be-clustering.git
-cd be-clustering
-        \end{verbatim}
+
+        \begin{mdframed}[style=codestyle]
+            \small\texttt{git clone https://github.com/pt-sinan-akbar/be-clustering.git} \\
+            \small\texttt{cd be-clustering}
+        \end{mdframed}
 
         \item \textbf{Buat dan aktifkan virtual environment}
-        \begin{verbatim}
-python -m venv venv
-source venv/bin/activate
-        \end{verbatim}
+
+        \begin{mdframed}[style=codestyle]
+            \small\texttt{python -m venv venv} \\
+            \small\texttt{source venv/bin/activate}
+        \end{mdframed}
 
         \item \textbf{Instal dependensi}
-        \begin{verbatim}
-pip install -r requirements.txt
-        \end{verbatim}
+
+        \inlinecode{pip install -r requirements.txt}
 
         \item \textbf{Konfigurasi environment}
-        \begin{verbatim}
-cp .env_dummy .env
-        \end{verbatim}
+
+        \inlinecode{cp .env\_dummy .env}
+
         Edit file \texttt{.env} dan sesuaikan kredensial database PostgreSQL Anda.
 
         \item \textbf{Jalankan aplikasi}
-        \begin{verbatim}
-uvicorn main:app --reload
-        \end{verbatim}
+
+        \inlinecode{uvicorn main:app --reload}
+
         API akan berjalan di \url{http://localhost:8080}
     \end{enumerate}
 
@@ -235,54 +271,57 @@ uvicorn main:app --reload
 
     \subsubsection{Langkah-langkah}
     Selain menggunakan metode instalasi ini, anda juga dapat \textit{pull} image yang telah disediakan di Docker Hub dengan perintah:
-    \begin{verbatim}
-docker pull dta32/be-clustering:latest
-    \end{verbatim}
+
+    \inlinecode{docker pull dta32/be-clustering:latest}
     Jika menggunakan metode \textit{pull} image, anda dapat langsung melompat ke langkah 4.
     \begin{enumerate}
         \item \textbf{Clone repositori backend}
-        \begin{verbatim}
-git clone https://github.com/pt-sinan-akbar/be-clustering.git
-cd be-clustering
-        \end{verbatim}
+
+        \begin{mdframed}[style=codestyle]
+            \small\texttt{git clone https://github.com/pt-sinan-akbar/be-clustering.git} \\
+            \small\texttt{cd be-clustering}
+        \end{mdframed}
 
         \item \textbf{Salin dan edit file environment}
-        \begin{verbatim}
-cp .env_dummy .env
-        \end{verbatim}
+
+        \inlinecode{cp .env\_dummy .env}
+
         Edit file \texttt{.env} dan sesuaikan kredensial database PostgreSQL Anda.
 
         \item \textbf{Build Docker image}
-        \begin{verbatim}
-docker build -t be-clustering:latest .
-        \end{verbatim}
+
+        \inlinecode{docker build -t be-clustering:latest .}
 
         \item \textbf{Jalankan Docker container} \\
         Setelah image berhasil dibuat, jalankan sebagai sebuah kontainer dengan perintah berikut.
-        \begin{verbatim}
-docker run --name be-clustering-container -v $(pwd)/.env:/app/.env -d -p 8080:8080 be-clustering:latest
-        \end{verbatim}
+
+        \begin{mdframed}[style=codestyle]
+            \small\texttt{docker run --name be-clustering-container} \\
+            \small\texttt{-v \$(pwd)/.env:/app/.env -d -p 8080:8080 be-clustering:latest}
+        \end{mdframed}
+
         Atau gunakan perintah berikut jika anda menggunakan metode \textit{pull} image.
-        \begin{verbatim}
-docker run --name be-clustering-container -v $(pwd)/.env:/app/.env -d -p 8080:8080 dta32/be-clustering:latest
-        \end{verbatim}
+
+        \begin{mdframed}[style=codestyle]
+            \small\texttt{docker run --name be-clustering-container} \\
+            \small\texttt{-v \$(pwd)/.env:/app/.env -d -p 8080:8080 dta32/be-clustering:latest}
+        \end{mdframed}
+
         \item \textbf{Akses API}
         \url{http://localhost:8080}
     \end{enumerate}
 
     \subsubsection{Menghentikan dan Menghapus Kontainer}
     Untuk menghentikan kontainer:
-    \begin{verbatim}
-docker stop clustering-api-container
-    \end{verbatim}
+
+    \inlinecode{docker stop clustering-api-container}
     Untuk menghapus kontainer setelah dihentikan:
-    \begin{verbatim}
-docker rm clustering-api-container
-    \end{verbatim}
+
+    \inlinecode{docker rm clustering-api-container}
 
     \subsection{Prosedur Penggunaan Backend}
     Setelah aplikasi backend berhasil di-install dan dijalankan, backend dapat digunakan dengan menggunakan Frontend
     secara bersamaan, hal ini dikarenakan Backend hanya berguna untuk mengambil dan mengolah lalu menyajikan data
-    yang diperlukan oleh Frontend
+    yang diperlukan oleh Frontend.
 
 \end{document}
